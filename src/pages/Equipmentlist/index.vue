@@ -438,7 +438,7 @@ export default {
 .el-form-item__label {
   background: #f2f3f7;
   height: 32px;
-  margin-top: 5px;
+  margin-top: 2px;
   width: 104px;
   text-align: center;
   line-height: 32px;
