@@ -74,28 +74,28 @@
               <template slot="title">
                 <i class="el-icon-chat-dot-square"></i>
                 <span>用户反馈</span>
-              </template> -->
-              <!-- <el-menu-item-group>
+            </template>-->
+            <!-- <el-menu-item-group>
                 <el-menu-item index="3-1">选项2</el-menu-item>
-              </el-menu-item-group> -->
-              <!-- <el-submenu index="3-2">
+            </el-menu-item-group>-->
+            <!-- <el-submenu index="3-2">
                 <template slot="title">选项4</template>
                 <el-menu-item index="3-2-1">选项1</el-menu-item>
-              </el-submenu> -->
+            </el-submenu>-->
             <!-- </el-submenu> -->
             <!-- 工单中心 -->
             <!-- <el-submenu index="4">
               <template slot="title">
                 <i class="el-icon-document"></i>
                 <span>工单中心</span>
-              </template> -->
-              <!-- <el-menu-item-group>
+            </template>-->
+            <!-- <el-menu-item-group>
                 <el-menu-item index="4-1">选项2</el-menu-item>
-              </el-menu-item-group> -->
-              <!-- <el-submenu index="4-2">
+            </el-menu-item-group>-->
+            <!-- <el-submenu index="4-2">
                 <template slot="title">选项4</template>
                 <el-menu-item index="4-2-1">选项1</el-menu-item>
-              </el-submenu> -->
+            </el-submenu>-->
             <!-- </el-submenu> -->
             <!-- 人员设置 -->
             <el-submenu index="5">
@@ -112,14 +112,14 @@
               <template slot="title">
                 <i class="el-icon-setting"></i>
                 <span>系统设置</span>
-              </template> -->
-              <!-- <el-menu-item-group>
+            </template>-->
+            <!-- <el-menu-item-group>
                 <el-menu-item index="6-1">选项2</el-menu-item>
-              </el-menu-item-group> -->
-              <!-- <el-submenu index="6-2">
+            </el-menu-item-group>-->
+            <!-- <el-submenu index="6-2">
                 <template slot="title">选项4</template>
                 <el-menu-item index="6-2-1">选项1</el-menu-item>
-              </el-submenu> -->
+            </el-submenu>-->
             <!-- </el-submenu> -->
           </el-menu>
         </el-aside>
@@ -157,20 +157,18 @@ export default {
       if (val == "loginOut") {
         this.$store.commit("saveRoute", this.$route.name);
         this.$router.push({ name: "login" });
-        // this.$dhweb.logout(this.$store.state.loginHandle);
-        sessionStorage.clear();
         localStorage.clear();
       }
     }
   },
   mounted() {
-    if (sessionStorage.getItem("account")) {
-      this.user = JSON.parse(sessionStorage.getItem("account")).user;
+    if (this.$store.state.userLogin.ent_name) {
+      this.user = this.$store.state.userLogin.ent_name;
     }
     saveUserLogin(this);
   },
   computed: {
-    ...mapState(["loginHandle"])
+    ...mapState(["userLogin"])
   }
 };
 </script>

@@ -84,7 +84,7 @@ export default {
               "account",
               JSON.stringify({
                 user: login.usr_code,
-                trade_pwd: md5(md5(login.trade_pwd))
+                trade_pwd: login.trade_pwd
               })
             );
           }

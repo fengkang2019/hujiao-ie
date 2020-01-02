@@ -925,22 +925,18 @@ export default {
 <style lang="scss">
 $mainWdth: 100%;
 $fff: #fff;
-.detailDialog {
-  .el-dialog__header {
-    background: #e1e1e1;
-    z-index: 100;
-  }
-  .el-dialog__body {
-    .el-table {
-      width: $mainWdth;
-      z-index: 100;
-    }
-  }
-}
 #cutoff {
   width: $mainWdth;
   height: $mainWdth;
   background: $fff;
+  .el-drawer{
+    padding: 20px;
+    .el-drawer__header{
+      font-size: 20px;
+      font-weight: 700;
+      color: #000;
+    }
+  }
   .el-row {
     height: $mainWdth;
     .left {

@@ -26,7 +26,7 @@
         <el-col :span="6">
           <div class="grid-content bg-purple">
             <el-form-item label="呼叫器编号">
-              <el-select v-model="form.regionCode" clearable placeholder="请选择区域" size="small">
+              <el-select v-model="form.devNo" clearable placeholder="请选择呼叫器编号" size="small">
                 <el-option value label="全部"></el-option>
                 <el-option v-for="(item,i) in devNo" :key="i" :value="item.devNo"></el-option>
               </el-select>
@@ -198,7 +198,8 @@ export default {
         type: "caller",
         current: 1,
         size: 10,
-        total: 0
+        total: 0,
+        devNo:"",
       },
       tableData: [],
       visibleFlag: false,
