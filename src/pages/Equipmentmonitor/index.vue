@@ -10,6 +10,7 @@
                 v-model="form.parkCode"
                 placeholder="请选择停车场"
                 filterable
+                clear
               >
                 <el-option label="全部" value></el-option>
                 <el-option
@@ -25,7 +26,7 @@
         <el-col :span="6">
           <div class="grid-content bg-purple">
             <el-form-item size="small" label="区域">
-              <el-select v-model="form.regionCode" placeholder="请选择区域">
+              <el-select v-model="form.regionCode" placeholder="请选择区域" clear>
                 <el-option label="全部" value></el-option>
                 <el-option
                   v-for="(item,i) in regionCodeList"
@@ -38,7 +39,7 @@
           </div>
         </el-col>
         <el-col :span="2">
-          <el-button class="btn" size="small" type="primary" @click="search()">查询</el-button>
+          <el-button class="btn" size="small" type="primary" @click="search(form)">查询</el-button>
         </el-col>
       </el-row>
     </el-form>
@@ -108,7 +109,9 @@ export default {
         .post("/pagerSelect/getDeviceState", {
           devNo: "",
           size: 100,
-          current: 1
+          current: 1,
+          parkCode:form.parkCode,
+          regionCode:form.regionCode,
         })
         .then(res => {
           if (res.data.records.length > 0) {

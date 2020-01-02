@@ -367,7 +367,7 @@ export default {
       //当前窗口数
       n: 0,
       devId: "",
-      monitorId: "",
+      monitorId: ""
     };
   },
   methods: {
@@ -929,9 +929,9 @@ $fff: #fff;
   width: $mainWdth;
   height: $mainWdth;
   background: $fff;
-  .el-drawer{
+  .el-drawer {
     padding: 20px;
-    .el-drawer__header{
+    .el-drawer__header {
       font-size: 20px;
       font-weight: 700;
       color: #000;
@@ -1139,7 +1139,24 @@ $fff: #fff;
       border-radius: 0;
       background: rgba(0, 0, 0, 0.1);
     }
-
+    .left {
+      /*三角箭头的颜色*/
+      scrollbar-arrow-color: #fff;
+      /*滚动条滑块按钮的颜色*/
+      scrollbar-face-color: #ffffff;
+      /*滚动条整体颜色*/
+      scrollbar-highlight-color: #fff;
+      /*滚动条阴影*/
+      scrollbar-shadow-color: #fff;
+      /*滚动条轨道颜色*/
+      scrollbar-track-color: #fff;
+      /*滚动条3d亮色阴影边框的外观颜色——左边和上边的阴影色*/
+      scrollbar-3dlight-color: #fff;
+      /*滚动条3d暗色阴影边框的外观颜色——右边和下边的阴影色*/
+      scrollbar-darkshadow-color: #fff;
+      /*滚动条基准颜色*/
+      scrollbar-base-color: #fff;
+    }
     .center {
       height: $mainWdth;
       .grid-content {

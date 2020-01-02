@@ -219,7 +219,7 @@
           @current-change="handleCurrentChange"
           :current-page="form.current"
           :page-size="form.size"
-          :page-sizes="[5, 10, 15, 20]"
+          :page-sizes="[10, 20, 50, 100]"
           background
           layout="total, prev, pager, next, sizes, jumper"
           :total="form.total"

@@ -89,8 +89,8 @@
         <el-table-column fixed prop="regionName" label="区域"></el-table-column>
         <el-table-column fixed prop="gateName" label="通道"></el-table-column>
         <el-table-column fixed prop="devNo" label="呼叫器编号"></el-table-column>
-        <el-table-column fixed prop="devVer" label="版本号"></el-table-column>
-        <el-table-column :formatter="formatter" fixed prop="addTime" label="添加时间"></el-table-column>
+        <el-table-column fixed prop="devVer" label="版本号" width="80"></el-table-column>
+        <el-table-column :formatter="formatter" fixed prop="addTime" label="添加时间" width="150"></el-table-column>
         <el-table-column fixed prop="cameraId" label="设备ID"></el-table-column>
         <el-table-column fixed prop="monitorId" label="监控ID"></el-table-column>
         <el-table-column :formatter="formatter2" fixed prop="activeDate" label="启用时间"></el-table-column>
@@ -161,7 +161,7 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page.sync="form.current"
-          :page-sizes="[2, 3, 5, 10]"
+          :page-sizes="[10,20,50, 100]"
           :page-size="form.size"
           layout="total, prev, pager, next, sizes, jumper"
           :total="form.total"
@@ -199,7 +199,7 @@ export default {
         current: 1,
         size: 10,
         total: 0,
-        devNo:"",
+        devNo: ""
       },
       tableData: [],
       visibleFlag: false,
@@ -215,8 +215,7 @@ export default {
       devNo: [],
       regionCodeList: [],
       GateCodeList: [],
-      loading:false,
-    
+      loading: false
     };
   },
   computed: {
@@ -329,7 +328,7 @@ export default {
     //查询
     search(form) {
       if (form.type == "caller") {
-        this.loading =true;
+        this.loading = true;
         let that = this;
         const reqData = {
           current: this.form.current,
@@ -345,7 +344,7 @@ export default {
             this.form.size = size;
             this.form.current = current;
             this.tableData = records;
-            this.loading =false;
+            this.loading = false;
           } else {
             this.$message.error("暂无数据");
             return false;

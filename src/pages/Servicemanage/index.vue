@@ -66,7 +66,7 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page.sync="form.current"
-          :page-sizes="[2, 3, 5, 10]"
+          :page-sizes="[10,20, 50, 100]"
           :page-size="form.size"
           layout="total, prev, pager, next, sizes, jumper"
           :total="form.total"
