@@ -854,6 +854,15 @@ export default {
     },
     EventLoginServer(bussness) {
       console.log(bussness, "确认登陆结果");
+      let DeviceStatusChange = document.createElement("script");
+      DeviceStatusChange.setAttribute("for", "VSPOcxClient");
+      DeviceStatusChange.event =
+        "EventALCOperator(IOpType,lALHandle,strName,ulState)";
+      DeviceStatusChange.appendChild(
+        document.createTextNode("stateChange.EventALCOperator(IOpType,lALHandle,strName,ulState)")
+      );
+      document.body.appendChild(DeviceStatusChange);
+
       this.SetOcxSize(1360, 825);
       VSPOcxClient.SetLayout(4);
     },
@@ -875,6 +884,9 @@ export default {
       }
       if (ulState == 4) {
       }
+    },
+    EventALCOperator(IOpType,lALHandle,strName,ulState){
+      console.log("报警服务变化",strName)
     }
   },
 
@@ -887,6 +899,7 @@ export default {
     window.phoneListener = this;
     window.loginSuccess = this;
     window.resultRt = this;
+    window.stateChange =this;
     let version = VSPOcxClient.GetVersion();
     console.log("版本号", version);
     var ring = document.createElement("script");

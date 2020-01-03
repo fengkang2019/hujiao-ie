@@ -12,7 +12,7 @@
         </el-col>
         <el-col :span="4" v-if="value==1">
           <div class="grid-content bg-purple export">
-            <el-button size="small" class="btn" type="primary">导出</el-button>
+            <el-button size="small" class="btn" @click="exportToExcel" type="primary">导出</el-button>
           </div>
         </el-col>
       </el-row>
@@ -102,10 +102,9 @@
                 clearable
                 size="small"
               >
-                <el-option :value="0" label="等待处理"></el-option>
-                <el-option :value="1" label="未处理"></el-option>
-                <el-option :value="2" label="处理中"></el-option>
-                <el-option :value="3" label="已处理"></el-option>
+                <el-option :value="0" label="未处理"></el-option>
+                <el-option :value="1" label="处理中"></el-option>
+                <el-option :value="2" label="已处理"></el-option>
               </el-select>
             </el-form-item>
           </div>
@@ -195,21 +194,41 @@
     </el-row>
     <el-row class="downRow2" v-if="value==1">
       <el-table :data="tableData" border style="width: 100%" :fit="true" v-loading="loading">
-        <el-table-column width="60" fixed label="序号">
+        <el-table-column width="60" fixed label="序号" props="index">
           <template slot-scope="scope">
             <span>{{(form.current-1)*form.size+ scope.$index+1}}</span>
           </template>
         </el-table-column>
-        <el-table-column fixed prop="parkName" label="停车场"></el-table-column>
-        <el-table-column fixed prop="regionName" label="区域"></el-table-column>
-        <el-table-column fixed prop="devNo" label="呼叫器编号"></el-table-column>
+        <el-table-column
+          fixed
+          prop="parkName"
+          label="停车场"
+          :formatter="(row,column,cellValue)=>cellValue?cellValue:'--'"
+        ></el-table-column>
+        <el-table-column
+          fixed
+          prop="regionName"
+          label="区域"
+          :formatter="(row,column,cellValue)=>cellValue?cellValue:'--'"
+        ></el-table-column>
+        <el-table-column
+          fixed
+          prop="devNo"
+          label="呼叫器编号"
+          :formatter="(row,column,cellValue)=>cellValue?cellValue:'--'"
+        ></el-table-column>
         <el-table-column fixed :formatter="formatType" prop="type" label="呼叫类型"></el-table-column>
         <el-table-column :formatter="formatter" fixed prop="callTime" label="呼入时间"></el-table-column>
-        <el-table-column :formatter="formatter3" fixed prop="status" label="接听状态"></el-table-column>
-        <el-table-column fixed prop="waitTime" label="接听等待时长"></el-table-column>
+        <el-table-column :formatter="formatStatus" fixed prop="status" label="接听状态"></el-table-column>
+        <el-table-column :formatter="row=>row.waitTime+'S'" fixed prop="waitTime" label="接听等待时长"></el-table-column>
         <el-table-column fixed prop="userNo" label="当班客服"></el-table-column>
-        <el-table-column :formatter="formatter2" fixed prop="startTime" label="处理时间"></el-table-column>
-        <el-table-column fixed prop="processTime" label="处理时长"></el-table-column>
+        <el-table-column :formatter="formatter" fixed prop="startTime" label="处理时间"></el-table-column>
+        <el-table-column
+          :formatter="(row)=>row.processTime+'S'"
+          fixed
+          prop="processTime"
+          label="处理时长"
+        ></el-table-column>
         <el-table-column fixed prop="remark" label="未接听原因"></el-table-column>
       </el-table>
       <div class="block">
@@ -288,20 +307,6 @@ export default {
       regionCodeList: [],
       echartData: {},
       loading: false
-      // answered: 0,
-      // auto: 0,
-      // button: 0,
-      // missed: 0,
-      // processFourMin: 0,
-      // processMore: 0,
-      // processSixty: 0,
-      // processThirty: 0,
-      // processTwoMin: 0,
-      // waitFourMin: 0,
-      // waitMore: 0,
-      // waitSixty: 0,
-      // waitThirty: 0,
-      // waitTwoMin: 0
     };
   },
   methods: {
@@ -352,47 +357,102 @@ export default {
       this.searchRecord();
     },
     //点击导出
-    // exportToExcel() {
-    //   require.ensure([], () => {
-    //     const {
-    //       export_json_to_excel
-    //     } = require("../../assets/js/Export2Excel");
-    //     const tHeader = [
-    //       "序号",
-    //       "停车场",
-    //       "区域",
-    //       "呼叫器编号",
-    //       "呼叫类型",
-    //       "呼入时间",
-    //       "接听状态",
-    //       "接听等待时长",
-    //       "当班客服",
-    //       "处理时间",
-    //       "处理时长",
-    //       "备注"
-    //     ];
-    //     const filterVal = [
-    //       "index",
-    //       "parkCode",
-    //       "regionCode",
-    //       "devNo",
-    //       "type",
-    //       "callTime",
-    //       "status",
-    //       "waitTime",
-    //       "service",
-    //       "startTime",
-    //       "processTime",
-    //       "remark"
-    //     ];
-    //     const list = this.tableData;
-    //     const data = this.formatJson(filterVal, list);
-    //     export_json_to_excel(tHeader, data, "呼叫记录excel");
-    //   });
-    // },
-    // formatJson(filterVal, jsonData) {
-    //   return jsonData.map(v => filterVal.map(j => v[j]));
-    // },
+    exportToExcel() {
+      require.ensure([], () => {
+        const {
+          export_json_to_excel
+        } = require("../../assets/js/Export2Excel");
+        const tHeader = [
+          "序号",
+          "停车场",
+          "区域",
+          "呼叫器编号",
+          "呼叫类型",
+          "呼入时间",
+          "接听状态",
+          "接听等待时长",
+          "当班客服",
+          "处理时间",
+          "处理时长",
+          "备注"
+        ];
+        const filterVal = [
+          "index",
+          "parkName",
+          "regionName",
+          "devNo",
+          "type",
+          "callTime",
+          "status",
+          "waitTime",
+          "service",
+          "startTime",
+          "processTime",
+          "remark"
+        ];
+        let list = [];
+        this.$axios
+          .post("/pagerSelect/searchRecord", {
+            size: 1000,
+            current: 1
+          })
+          .then(res => {
+            list = res.data.records;
+            const data = this.formatJson(filterVal, list);
+            export_json_to_excel(tHeader, data, "呼叫记录excel");
+          });
+      });
+    },
+    formatJson(filterVal, jsonData) {
+      return jsonData.map((v, n) =>
+        filterVal.map(j => {
+          // if (j == "callTime") {
+          //   let moment = this.$moment(v[j], "YYYYMMDDHHmmss");
+          //   v[j] = moment.format("YYYY-MM-DD HH:mm:ss");
+          // } else if (j == "startTime") {
+          //   let moment = this.$moment(v[j], "YYYYMMDDHHmmss");
+          //   v[j] = moment.format("YYYY-MM-DD HH:mm:ss");
+          // } else if (j == "type") {
+          //   v[j] = v[j] == 1 ? "按键呼叫" : "自动呼叫";
+          // } else if (j == "status") {
+          //   v[j] = v[j] == 0 ? "未处理" : v[j] == 1 ? "处理中" : "已处理";
+          // } else if (j == "waitTime") {
+          //   v[j] = v[j] + "s";
+          // } else if (j == "processTime") {
+          //   v[j] = v[j] + "s";
+          // } else if (j == "index") {
+          //   v[j] = n + 1;
+          // }
+          // return v[j];
+          let moment;
+          switch (j) {
+            case "callTime":
+              moment = this.$moment(v[j], "YYYYMMDDHHmmss");
+              v[j] = moment.format("YYYY-MM-DD HH:mm:ss");
+              break;
+            case "startTime":
+              moment = this.$moment(v[j], "YYYYMMDDHHmmss");
+              v[j] = moment.format("YYYY-MM-DD HH:mm:ss");
+              break;
+            case "type":
+              v[j] = v[j] == 1 ? "按键呼叫" : "自动呼叫";
+              break;
+            case "status":
+              v[j] = v[j] == 0 ? "未处理" : v[j] == 1 ? "处理中" : "已处理";
+            case "waitTime":
+              v[j] = v[j] + "s";
+              break;
+            case "processTime":
+              v[j] = v[j] + "s";
+              break;
+            case "index":
+              v[j] = n + 1;
+              break;
+          }
+          return v[j];
+        })
+      );
+    },
     //查询呼叫记录
     searchRecord() {
       this.loading = true;
@@ -408,12 +468,6 @@ export default {
         type: this.form.type,
         userNo: this.form.userNo
       };
-      if (this.value == "2") {
-        reqData.size = "";
-      }
-
-      // this.reWriteDatas();
-      // console.log(reqData);
       this.$axios.post("/pagerSelect/searchRecord", reqData).then(res => {
         if (res) {
           const { records, size, current, total } = res.data;
@@ -421,7 +475,7 @@ export default {
           this.form.current = current;
           this.form.total = total;
           this.tableData = records;
-          this.loading =false;
+          this.loading = false;
         } else {
           return false;
         }
@@ -439,15 +493,14 @@ export default {
           }
         });
     },
-    formatter(row) {
-      let moment = this.$moment(row.callTime, "YYYYMMDDHHmmss");
+    formatter(row, column, cellValue) {
+      if (cellValue == 0) {
+        return "--";
+      }
+      let moment = this.$moment(cellValue, "YYYYMMDDHHmmss");
       return moment.format("YYYY-MM-DD HH:mm:ss");
     },
-    formatter2(row) {
-      let moment = this.$moment(row.startTime, "YYYYMMDDHHmmss");
-      return moment.format("YYYY-MM-DD HH:mm:ss");
-    },
-    formatter3(row) {
+    formatStatus(row) {
       if (row.status == 0) {
         return "未处理";
       } else if (row.status == 1) {

@@ -40,18 +40,32 @@ export function chooseDate(date, value) {
 export function saveUserLogin(that) {
     if (sessionStorage.getItem("store")) {
         that.$store.replaceState(
-          Object.assign(
-            {},
-            that.$store.state,
-            JSON.parse(sessionStorage.getItem("store"))
-          )
+            Object.assign(
+                {},
+                that.$store.state,
+                JSON.parse(sessionStorage.getItem("store"))
+            )
         );
         sessionStorage.removeItem("store");
-      }
+    }
 
-      // //在页面刷新时将vuex里的信息保存到sessionStorage里
-      window.addEventListener("beforeunload", () => {
+    // //在页面刷新时将vuex里的信息保存到sessionStorage里
+    window.addEventListener("beforeunload", () => {
         sessionStorage.setItem("store", JSON.stringify(that.$store.state));
-      });
+    });
 }
 
+//封装导出功能函数
+export function export2Excel(columns, list) {
+    require.ensure([], () => {
+        const { export_json_to_excel } = require('@/assets/js/Export2Excel');
+        let tHeader = []
+        let filterVal = []
+        columns.forEach(item => {
+            tHeader.push(item.title)
+            filterVal.push(item.key)
+        })
+        const data = list.map(v => filterVal.map(j => v[j]))
+        export_json_to_excel(tHeader, data, '数据列表');
+    })
+}
