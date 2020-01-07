@@ -181,23 +181,22 @@
                 </div>
                 <div class="carType">
                   <div class="carId">{{showCarId?showCarId:"--"}}</div>
-                  <div class="chooseCarNumColor">
-                    <el-form-item>
-                      <el-select
-                        :class="form.carNumColor==1?'blue':form.carNumColor==2?'yellow':form.carNumColor==3?'green':'gray'"
-                        v-model="form.carNumColor"
-                        placeholder
-                      >
-                        <el-option class="blue" label="蓝牌" value="1"></el-option>
-                        <el-option class="yellow" label="黄牌" value="2"></el-option>
-                        <el-option class="green" label="绿牌" value="3"></el-option>
-                      </el-select>
-                    </el-form-item>
-                  </div>
+                  <el-form-item>
+                    <el-select
+                      :class="form.carNumColor==1?'blue':form.carNumColor==2?'yellow':form.carNumColor==3?'green':'gray'"
+                      v-model="form.carNumColor"
+                      placeholder
+                      style="height:28px"
+                    >
+                      <el-option key="blue" class="blue" label="蓝牌" value="1"></el-option>
+                      <el-option key="yellow" class="yellow" label="黄牌" value="2"></el-option>
+                      <el-option key="green" class="green" label="绿牌" value="3"></el-option>
+                    </el-select>
+                  </el-form-item>
                 </div>
               </el-col>
             </el-row>
-            <el-row class="carRecord">
+            <el-row class="carRecord" v-loading="loading1">
               <el-col v-if="parkState" class="inCar">
                 <p>
                   <span>入场</span>
@@ -231,7 +230,7 @@
                 <p>暂无停车记录</p>
               </el-col>
             </el-row>
-            <el-row class="detail">
+            <el-row class="detail" v-loading="loading2">
               <el-col v-if="!state4">
                 <p>
                   <span>订单详情:</span>
@@ -314,7 +313,7 @@ export default {
       activeName: "first",
       form: {
         carNum: "",
-        carNumColor: "",
+        carNumColor: "1",
         remark: "",
         cutoffReason: ""
       },
@@ -374,7 +373,11 @@ export default {
       deviceInfo: {},
       //判断当前是在接听还是主动呼叫
       answering: true,
-      answerData: []
+      answerData: [],
+      loading1: false,
+      loading2: false,
+      //当前主动呼叫时的设备id
+      currentDeviceId: ""
     };
   },
   methods: {
@@ -419,9 +422,12 @@ export default {
       this.records2 = [];
       this.records2.push(item);
       this.state4 = true;
-      this.answering = false;
       this.state2 = false;
+      //能否接听
       this.isAnswered = false;
+      if (!this.answering) {
+        this.changeStatus();
+      }
     },
     //接听
     answer(item) {
@@ -443,6 +449,7 @@ export default {
             this.state2 = true;
             this.parkState = true;
             this.answering = true;
+            //能否接听
             this.isAnswered = true;
             this.devicesInfo = res.data;
             //当前接听数据
@@ -467,7 +474,11 @@ export default {
     },
     //查车牌
     searchCar(form) {
-      this.clearInfo();
+      // this.clearInfo();
+      this.carInfo = {};
+      this.carInfo2 = [];
+      this.charge = [];
+      this.showCarId = "";
       this.$refs.carform.validate(val => {
         if (val) {
           // console.log("搜索车牌号" + form.carNum);
@@ -490,7 +501,7 @@ export default {
     inputCarId(value) {
       let that = this;
       if (value.length >= 3) {
-        console.log("查车牌列表");
+        console.log("查车牌列表", value);
         let reqData;
         if (this.answering) {
           reqData = {
@@ -532,12 +543,16 @@ export default {
     },
 
     handleSelect(item) {
-      this.clearInfo();
+      console.log("被选择的车牌", this.form);
+      this.showCarId = "";
+      this.carInfo = {};
+      this.carInfo2 = [];
+      this.charge = [];
       if (!this.answering) {
         this.parkInfo = {
           parkCode: this.deviceInfo.parkCode,
           carType: this.form.carNumColor,
-          carId: this.form.carNum
+          carId: item.value
         };
       }
       //查入场车信息
@@ -599,12 +614,11 @@ export default {
           status: status
         })
         .then(res => {
-          if (res.data.length > 0) {
-            if (status == 0) {
-              this.records0 = res.data.records;
-            } else if (status == 1) {
-              this.answerData = res.data;
-            }
+          if (status == 0) {
+            this.records0 = res.data;
+          } else if (status == 1) {
+            this.answerData = res.data;
+            console.log("接听中", this.answerData);
           }
         });
     },
@@ -631,6 +645,7 @@ export default {
     },
     // 查询 入场车信息
     searchInCarInfos(carId, carType) {
+      this.loading1 = true;
       const that = this;
       const reqData = {
         maxid: 0,
@@ -677,18 +692,22 @@ export default {
             ).then(res => {
               if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
                 that.charge = res.data.ANSWERS[0].ANS_COMM_DATA;
+                this.loading1 = false;
                 console.log(that.charge);
               } else {
                 this.$message.error("查询入场车辆计费失败");
+                this.loading1 = true;
                 return false;
               }
             });
           } else {
             this.$message.error("此设备暂无车辆入场信息");
+            this.loading1 = true;
             return false;
           }
         } else {
           this.$message.error("查询入场车辆失败");
+          this.loading1 = true;
           return false;
         }
       });
@@ -696,6 +715,7 @@ export default {
     //查询车卡订单信息
     searchCarInfo() {
       if (JSON.stringify(this.parkInfo) != "{}") {
+        this.loading2 = true;
         //当前设备停车信息
         console.log(this.parkInfo);
         const reqData = {
@@ -709,6 +729,7 @@ export default {
             if (JSON.stringify(res.data.assetsDetail) != "{}") {
               this.carInfo = res.data;
               this.groupId = res.data.member.id;
+              this.loading2 = false;
             } else {
               this.$message.error("暂无车卡信息");
               return false;
@@ -726,9 +747,10 @@ export default {
       this.carInfo = {};
       this.carInfo2 = [];
       this.charge = [];
-      this.form.carNumColor = "";
       this.form.carNum = "";
       this.showCarId = "";
+      this.loading1 = false;
+      this.loading2 = false;
     },
     //播放视屏
     playRT() {
@@ -765,7 +787,7 @@ export default {
       this.timer = setInterval(() => {
         this.searchRecord(0);
         this.searchRecord(1);
-      }, 3000);
+      }, 1000);
     },
     //开闸
     cutOff() {
@@ -804,8 +826,43 @@ export default {
           endTime: "",
           remark: ""
         })
-        .then(res => {})
+        .then(res => {
+          if (res.data.msg == 1) {
+            this.currentDeviceId = res.data.id;
+          } else {
+            this.$message.error("插入一条呼叫记录失败");
+          }
+        })
         .catch(error => {});
+    },
+    //改变状态为已处理
+    changeStatus() {
+      const reqData = {
+        id: this.currentDeviceId,
+        status: 2
+      };
+      this.$axios.post("/pagerUpdate/updateRecord", reqData).then(res => {
+        if (res.data.ans == 1) {
+          this.$message.success("已成功插入一条记录");
+        } else {
+          this.$message.error("更新失败");
+        }
+      });
+    },
+    //插入心跳日志
+    insertHeart() {
+      const reqData = {
+        parkCode: this.deviceInfo.parkCode,
+        regionCode: this.deviceInfo.regionCode,
+        devNo: this.deviceInfo.devNo
+      };
+      this.$axios.post("/pagerInsert/insertHeartLog", reqData).then(res => {
+        if (res.data.msg == 1) {
+          this.$message.success("插入心跳日志成功");
+        } else {
+          this.$messsage.error("插入心跳日志失败");
+        }
+      });
     },
     //获取所有设备状态和id
     getDevices() {
@@ -941,6 +998,10 @@ export default {
       console.log("监听播放结果", ulCameraID, ulState);
       if (ulState == 0) this.$message.error("打开视频失败!");
       if (ulState == 3) {
+        //插入心跳日志
+        if (!this.answering) {
+          this.insertHeart();
+        }
         if (this.monitorId != undefined) {
           console.log("打开第三个视屏窗口", this.monitorId);
           let play = VSPOcxClient.PlayVideo(this.monitorId, 2);
@@ -1198,7 +1259,7 @@ $fff: #fff;
       // -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
       background: rgba(0, 0, 0, 0.2);
     }
-    .left::-ms-scrollbar-thumb {
+    .left:-ms-scrollbar-thumb {
       /*滚动条里面小方块*/
       border-radius: 5px;
       // -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
@@ -1211,30 +1272,30 @@ $fff: #fff;
       border-radius: 0;
       background: rgba(0, 0, 0, 0.1);
     }
-    .left::-ms-scrollbar-track {
+    .left:-ms-scrollbar-track {
       /*滚动条里面轨道*/
       // -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
       border-radius: 0;
       background: rgba(0, 0, 0, 0.1);
     }
-    // .left {
-    //   /*三角箭头的颜色*/
-    //   scrollbar-arrow-color: #fff;
-    //   /*滚动条滑块按钮的颜色*/
-    //   scrollbar-face-color: #ffffff;
-    //   /*滚动条整体颜色*/
-    //   scrollbar-highlight-color: #fff;
-    //   /*滚动条阴影*/
-    //   scrollbar-shadow-color: #fff;
-    //   /*滚动条轨道颜色*/
-    //   scrollbar-track-color: #fff;
-    //   /*滚动条3d亮色阴影边框的外观颜色——左边和上边的阴影色*/
-    //   scrollbar-3dlight-color: #fff;
-    //   /*滚动条3d暗色阴影边框的外观颜色——右边和下边的阴影色*/
-    //   scrollbar-darkshadow-color: #fff;
-    //   /*滚动条基准颜色*/
-    //   scrollbar-base-color: #fff;
-    // }
+    .left {
+      /*三角箭头的颜色*/
+      scrollbar-arrow-color: #fff;
+      /*滚动条滑块按钮的颜色*/
+      scrollbar-face-color: #ffffff;
+      /*滚动条整体颜色*/
+      scrollbar-highlight-color: #fff;
+      /*滚动条阴影*/
+      scrollbar-shadow-color: #fff;
+      /*滚动条轨道颜色*/
+      scrollbar-track-color: #fff;
+      /*滚动条3d亮色阴影边框的外观颜色——左边和上边的阴影色*/
+      scrollbar-3dlight-color: #fff;
+      /*滚动条3d暗色阴影边框的外观颜色——右边和下边的阴影色*/
+      scrollbar-darkshadow-color: #fff;
+      /*滚动条基准颜色*/
+      scrollbar-base-color: #fff;
+    }
     .center {
       height: $mainWdth;
       .grid-content {
@@ -1362,12 +1423,21 @@ $fff: #fff;
                   border: 2px solid #3c539f;
                   border-radius: 8px;
                   width: $mainWdth;
+
                   position: relative;
-                  .el-input__inner::-webkit-input-placeholder {
+                  .el-input__inner {
+                    height: 40px;
+                    border: none;
+                    color: #747474;
+                    /* 修改字号，默认继承input */
+                    font-size: 18px;
+                    font-weight: 600;
+                  }
+                  .el-input__inner:-ms-input-placeholder {
                     /* 修改字体颜色 */
                     color: #747474;
                     /* 修改字号，默认继承input */
-                    font-size: 16px;
+                    font-size: 18px;
                     font-weight: 600;
                     /* 设置背景色 */
                     // background: #8ac6d1;
@@ -1408,115 +1478,102 @@ $fff: #fff;
               justify-content: center;
               align-items: center;
               margin-top: 20px;
-              div.chooseCarNumColor {
-                background: $fff;
-                padding: 1px;
-                width: 60px;
-                height: 20px;
-                .el-form-item {
+              .carId {
+                font-size: 16px;
+                height: 30px;
+                line-height: 30px;
+                margin-right: 30px;
+              }
+              .el-form-item {
+                width: 100px;
+                .el-form-item__content {
                   width: $mainWdth;
-                  height: 20px;
-                  .el-form-item__content {
+                  padding: 1px;
+                  border: 2px solid #aaa;
+                  .el-select {
                     width: $mainWdth;
-                    height: 20px;
-                    .el-select {
-                      width: $mainWdth;
-                      height: 20px;
-                      border: 1px solid #aaa;
+                    .el-input {
+                      position: relative;
                       padding: 1px;
-                      .el-input {
-                        width: $mainWdth;
-                        height: 20px;
-                        position: relative;
-                        padding: 1px;
-                        input.el-input__inner {
-                          margin: 0;
-                          padding: 0;
-                          width: $mainWdth;
-                          height: 20px;
-                          position: absolute;
-                          top: 0;
-                          left: 0;
-                          border-radius: 0;
+                      input.el-input__inner {
+                        margin: 0;
+                        padding: 0;
+                        border: 1xp solid #aaa;
+                        border-radius: 0;
+                        text-align: left;
+                        background: blue;
+                        text-indent: 0.5rem;
+                        color: #fff;
+                        outline: none;
+                        font-weight: 700;
+                        height: 36px;
+                      }
+                      .el-input__suffix {
+                        top: 2px;
+                        span.el-input__suffix-inner {
                           background: blue;
-                          text-align: left;
-                          text-indent: 0.5rem;
-                          color: #fff;
-                          outline: none;
-                          font-weight: 700;
-                        }
-                        .el-input__suffix {
-                          height: 17px;
-                          width: 10px;
-                          margin-top: 1px;
-                          span.el-input__suffix-inner {
-                            width: 10px;
-                            height: 17px;
-                            padding: 0;
-                            right: 0px;
-                            background: blue;
-                            .el-select__caret {
-                              width: $mainWdth;
-                              height: $mainWdth;
-                              line-height: 16px;
-                            }
+                          padding: 0;
+                          display: -ms-inline-grid;
+                          .el-select__caret {
+                            // height: 20px;
                           }
                         }
                       }
                     }
-                    .el-select.blue {
-                      .el-input {
-                        input {
-                          background: blue;
-                        }
-                        span.el-input__suffix-inner {
-                          background: blue;
-                        }
+                  }
+                  .el-select.blue {
+                    .el-input {
+                      input {
+                        background: blue;
+                      }
+                      span.el-input__suffix-inner {
+                        background: blue;
                       }
                     }
-                    .el-select.yellow {
-                      .el-input {
-                        input {
-                          background: yellow;
-                        }
-                        span.el-input__suffix-inner {
-                          background: yellow;
-                        }
+                  }
+                  .el-select.yellow {
+                    .el-input {
+                      input {
+                        background: yellow;
+                      }
+                      span.el-input__suffix-inner {
+                        background: yellow;
                       }
                     }
-                    .el-select.green {
-                      .el-input {
-                        input {
-                          background: green;
-                        }
-                        span.el-input__suffix-inner {
-                          background: green;
-                        }
+                  }
+                  .el-select.green {
+                    .el-input {
+                      input {
+                        background: green;
+                      }
+                      span.el-input__suffix-inner {
+                        background: green;
                       }
                     }
                   }
                 }
               }
-              span {
-                display: block;
-                font-size: 12px;
-                font-weight: 700;
-                padding: 0 10px;
-              }
-              span:nth-child(1) {
-                background: #3c539f;
-                color: $fff;
-              }
-              span:nth-child(3) {
-                border-left: 3px solid #000;
-              }
-              div.carId {
-                width: 80px;
-                height: 22px;
-                text-align: center;
-                font-weight: 600;
-                line-height: 24px;
-              }
+
+              // span {
+              //   // display: block;
+              //   font-size: 12px;
+              //   font-weight: 700;
+              //   padding: 0 10px;
+              // }
+              // span:nth-child(1) {
+              //   background: #3c539f;
+              //   color: $fff;
+              // }
+              // span:nth-child(3) {
+              //   border-left: 3px solid #000;
+              // }
+              // div.carId {
+              //   width: 80px;
+              //   height: 22px;
+              //   text-align: center;
+              //   font-weight: 600;
+              //   line-height: 24px;
+              // }
             }
           }
         }
