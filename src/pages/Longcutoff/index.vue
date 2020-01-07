@@ -8,7 +8,12 @@
               <div class="title">呼叫记录</div>
               <el-tabs v-model="activeName" @tab-click="handleClick">
                 <el-tab-pane label="接听中" name="first">
-                  <div class="visible" v-show="state1" v-for="(item,i) in records1" :key="i">
+                  <div
+                    class="visible"
+                    v-show="answerData.length>0"
+                    v-for="(item,i) in answerData"
+                    :key="i"
+                  >
                     <p>
                       <span>呼叫器:</span>
                       <span>{{item.devNo}}</span>
@@ -30,7 +35,7 @@
                       <span>{{item.regionName}}</span>
                     </p>
                   </div>
-                  <div class="hidden" v-show="!state1">
+                  <div class="hidden" v-show="!(answerData.length>0)">
                     <span class="iconfont icon-web__zanwujilu"></span>
                     <span>暂无接听记录</span>
                   </div>
@@ -39,7 +44,7 @@
                   <span slot="label">
                     <el-badge class="mark" value="0">未接听</el-badge>
                   </span>
-                  配置管理
+                  <!-- 配置管理 -->
                 </el-tab-pane>
                 <el-tab-pane label="已接听" name="third">
                   <!-- records2 -->
@@ -179,7 +184,6 @@
                   <div class="chooseCarNumColor">
                     <el-form-item>
                       <el-select
-                        size="small"
                         :class="form.carNumColor==1?'blue':form.carNumColor==2?'yellow':form.carNumColor==3?'green':'gray'"
                         v-model="form.carNumColor"
                         placeholder
@@ -231,19 +235,19 @@
               <el-col v-if="!state4">
                 <p>
                   <span>订单详情:</span>
-                  <span>{{carInfo.commodity?formatTime(carInfo.commodity.ordertime) +" "+ formatPayType(carInfo.commodity.payType) +" "+"支付渠道:"+ formarOrderState(carInfo.commodity.orderstate):'无'}}</span>
+                  <span>{{carInfo.commodity&&JSON.stringify(carInfo.commodity)!="{}"?formatTime(carInfo.commodity.ordertime) +" "+ formatPayType(carInfo.commodity.payType) +" "+"支付渠道:"+ formarOrderState(carInfo.commodity.orderstate):'无'}}</span>
                 </p>
                 <p>
                   <span>月卡车详情:</span>
-                  <span>{{carInfo.member?formatTime3(carInfo.member.startDate)+"到"+formatTime3(carInfo.member.endDate):"无"}}</span>
+                  <span>{{carInfo.member&&JSON.stringify(carInfo.member)!="{}"?formatTime3(carInfo.member.startDate)+"到"+formatTime3(carInfo.member.endDate):"无"}}</span>
                 </p>
                 <p>
                   <span>内部车详情:</span>
-                  <span>{{carInfo.customCar?formatTime3(carInfo.member.startDate)+"到"+formatTime3(carInfo.member.endDate):"无"}}</span>
+                  <span>{{carInfo.customCar&&JSON.stringify(carInfo.customCar)!="{}"?formatTime3(carInfo.member.startDate)+"到"+formatTime3(carInfo.member.endDate):"无"}}</span>
                 </p>
                 <p>
                   <span>储值车详情:</span>
-                  <span>{{carInfo.assetsDetail?"储值余额:"+carInfo.assetsDetail.fundavl+"元":"无"}}</span>
+                  <span>{{carInfo.assetsDetail&&JSON.stringify(carInfo.assetsDetail)!="{}"?"储值余额:"+carInfo.assetsDetail.fundavl+"元":"无"}}</span>
                 </p>
                 <p>
                   <span>多卡多车详情:</span>
@@ -254,7 +258,7 @@
                   <a
                     @click="findDetail()"
                     class="chewei"
-                  >{{carInfo.member?carInfo.member.seatNum+"车位":"无"}}</a>
+                  >{{carInfo.member&&JSON.stringify(carInfo.member)!="{}"?carInfo.member.seatNum+"车位":"无"}}</a>
                 </p>
               </el-col>
             </el-row>
@@ -278,7 +282,7 @@
                   <el-input size="small" v-model="form.remark" placeholder="请输入备注原因"></el-input>
                 </el-form-item>
                 <el-button type="primary" class="cutOff" @click="onSubmit">确认开闸</el-button>
-                <el-button type="primary" class="callOff" @click="hangup(records1[0])">
+                <el-button type="primary" class="callOff" @click="hangup(recordsInfo)">
                   <span class="iconfont icon-guaduan"></span>
                   挂断
                 </el-button>
@@ -318,7 +322,6 @@ export default {
         carNum: [{ required: true, message: "请输入车牌号", trigger: "blur" }]
       },
       records0: [],
-      records1: [],
       records2: [],
       cutoffReason: "",
       remark: "",
@@ -367,7 +370,11 @@ export default {
       //当前窗口数
       n: 0,
       devId: "",
-      monitorId: ""
+      monitorId: "",
+      deviceInfo: {},
+      //判断当前是在接听还是主动呼叫
+      answering: true,
+      answerData: []
     };
   },
   methods: {
@@ -382,11 +389,21 @@ export default {
     //车位详情表格
     findDetail() {
       this.detailFlag = true;
-      this.$axios
-        .post("/pagerSelect/searchGroupCar", {
+      let reqData;
+      if (this.answering) {
+        reqData = {
           parkCode: this.recordsInfo.parkCode,
           groupId: this.groupId
-        })
+        };
+      } else if (!this.answering) {
+        reqData = {
+          parkCode: this.deviceInfo.parkCode,
+          groupId: this.groupId
+        };
+      }
+
+      this.$axios
+        .post("/pagerSelect/searchGroupCar", reqData)
         .then(res => {
           this.tableDatas = res.data;
         })
@@ -397,20 +414,19 @@ export default {
     //挂断
     hangup(item) {
       console.log("挂断电话");
+      this.clearInfo();
       this.stopRT();
       this.records2 = [];
       this.records2.push(item);
       this.state4 = true;
+      this.answering = false;
       this.state2 = false;
       this.isAnswered = false;
-      this.form.carNum = "";
-      this.showCarId = "";
     },
     //接听
     answer(item) {
       console.log("接听");
-      this.recordsInfo = item;
-      let that = this;
+      this.clearInfo();
       this.$axios
         .post("/pagerSelect/searchCallInfo", {
           parkCode: item.parkCode,
@@ -426,9 +442,11 @@ export default {
             this.state4 = false;
             this.state2 = true;
             this.parkState = true;
+            this.answering = true;
             this.isAnswered = true;
             this.devicesInfo = res.data;
-            this.records1.push(item);
+            //当前接听数据
+            this.recordsInfo = item;
             //查询车卡信息
             this.searchDevParkInfo(item);
             this.playRT();
@@ -444,14 +462,25 @@ export default {
     //点击刷新
     resetForm(form) {
       console.log(this.$refs.carform);
+      this.clearInfo();
       this.$refs.carform.resetFields();
     },
     //查车牌
-    searchCar(form, recordsInfo) {
-      let that = this;
+    searchCar(form) {
+      this.clearInfo();
       this.$refs.carform.validate(val => {
         if (val) {
-          console.log("搜索车牌号" + form.carNum);
+          // console.log("搜索车牌号" + form.carNum);
+          if (!this.answering) {
+            this.parkInfo = {
+              parkCode: this.deviceInfo.parkCode,
+              carType: form.carNumColor,
+              carId: form.carNum
+            };
+          }
+          //查入场车信息
+          this.searchCarInfo();
+          //查订单详情
           this.searchInCarInfos(form.carNum, form.carNumColor);
         } else {
           return false;
@@ -461,12 +490,21 @@ export default {
     inputCarId(value) {
       let that = this;
       if (value.length >= 3) {
-        console.log("查车牌列表" + this.records1[0].parkCode);
-        queryCarId(
-          {
+        console.log("查车牌列表");
+        let reqData;
+        if (this.answering) {
+          reqData = {
             car_id: value,
-            park_code: this.records1[0].parkCode
-          },
+            park_code: this.recordsInfo.parkCode
+          };
+        } else if (!this.answering) {
+          reqData = {
+            car_id: value,
+            park_code: this.deviceInfo.parkCode
+          };
+        }
+        queryCarId(
+          reqData,
           this.$store.state.userLogin.cust_id,
           this.$store.state.userLogin.session
         ).then(res => {
@@ -494,6 +532,16 @@ export default {
     },
 
     handleSelect(item) {
+      this.clearInfo();
+      if (!this.answering) {
+        this.parkInfo = {
+          parkCode: this.deviceInfo.parkCode,
+          carType: this.form.carNumColor,
+          carId: this.form.carNum
+        };
+      }
+      //查入场车信息
+      this.searchCarInfo();
       this.searchInCarInfos(item.value);
     },
     click1(e) {
@@ -530,32 +578,38 @@ export default {
     },
     //查询为接听数据
     searchRecord(status) {
-      let that = this;
+      // this.$axios
+      //   .post("/pagerSelect/searchRecord", {
+      //     status: status,
+      //     size: 10,
+      //     current: 1
+      //   })
+      //   .then(res => {
+      //     if (res.data.records.length > 0) {
+      //       this.records0 = res.data.records;
+      //     } else {
+      //       return false;
+      //     }
+      //   })
+      //   .catch(error => {
+      //     console.log(error);
+      //   });
       this.$axios
-        .post("/pagerSelect/searchRecord", {
-          status: status,
-          size: 10,
-          current: 1
+        .post("pagerSelect/latestSearchRecord", {
+          status: status
         })
         .then(res => {
-          if (res.data.records.length > 0) {
+          if (res.data.length > 0) {
             if (status == 0) {
               this.records0 = res.data.records;
             } else if (status == 1) {
-              this.records1 = res.data.records;
-              this.state1 = true;
+              this.answerData = res.data;
             }
-          } else {
-            return false;
           }
-        })
-        .catch(error => {
-          console.log(error);
         });
     },
     //查询设备对应停车信息
     searchDevParkInfo(item) {
-      let that = this;
       this.$axios
         .post("/pagerSelect/searchParkingDetail", {
           parkCode: item.parkCode,
@@ -564,11 +618,9 @@ export default {
         })
         .then(res => {
           if (JSON.stringify(res) != "{}") {
-            console.log(res);
-            that.parkInfo = res.data;
-            console.log(that.parkInfo);
-            that.searchCarInfo();
-            that.searchInCarInfos(that.parkInfo.carId, that.parkInfo.carType);
+            this.parkInfo = res.data;
+            this.searchCarInfo();
+            this.searchInCarInfos(this.parkInfo.carId, this.parkInfo.carType);
           } else {
             return false;
           }
@@ -641,10 +693,10 @@ export default {
         }
       });
     },
-    //查询车卡信息
+    //查询车卡订单信息
     searchCarInfo() {
-      const that = this;
       if (JSON.stringify(this.parkInfo) != "{}") {
+        //当前设备停车信息
         console.log(this.parkInfo);
         const reqData = {
           parkCode: this.parkInfo.parkCode,
@@ -655,10 +707,10 @@ export default {
           .post("/pagerSelect/searchCarDetail", reqData)
           .then(res => {
             if (JSON.stringify(res.data.assetsDetail) != "{}") {
-              that.carInfo = res.data;
-              that.groupId = res.data.member.id;
+              this.carInfo = res.data;
+              this.groupId = res.data.member.id;
             } else {
-              that.$message.error("暂无车卡信息");
+              this.$message.error("暂无车卡信息");
               return false;
             }
           })
@@ -669,16 +721,22 @@ export default {
         return false;
       }
     },
+    //清理右边信息
+    clearInfo() {
+      this.carInfo = {};
+      this.carInfo2 = [];
+      this.charge = [];
+      this.form.carNumColor = "";
+      this.form.carNum = "";
+      this.showCarId = "";
+    },
     //播放视屏
     playRT() {
       this.stopAllRT();
       this.devId = this.devicesInfo[0].cameraId;
       this.monitorId = this.devicesInfo[0].monitorId;
-      console.log(this.monitorId);
       let playFlag = VSPOcxClient.PlayVideo(this.devicesInfo[0].cameraId, 0);
       console.log(playFlag, "接听播放结果1");
-      // let playFlag2 = VSPOcxClient.PlayVideo(this.devicesInfo[0].monitorId, 1);
-      // console.log(playFlag2, "接听播放结果2");
     },
     //关闭视屏
     stopRT() {
@@ -711,14 +769,20 @@ export default {
     },
     //开闸
     cutOff() {
-      VSPOcxClient.OpenDO(this.devId, 1);
+      let cutoffResult = VSPOcxClient.OpenDO(this.devId, 1);
+      console.log("开闸结果", cutoffResult);
     },
     //主动打开 监控摄像头
     handleNodeClick(device) {
       this.stopAllRT();
       if (device.action == 1) {
+        this.clearInfo();
         this.state2 = true;
+        this.deviceInfo = device;
+        this.answering = false;
+        this.parkState = true;
         console.log(device.devId);
+        this.devId = device.devId;
         this.monitorId = device.monitorId;
         let playFlag = VSPOcxClient.PlayVideo(device.devId, 0);
         console.log(playFlag, "主动打开视频1");
@@ -859,7 +923,9 @@ export default {
       DeviceStatusChange.event =
         "EventALCOperator(IOpType,lALHandle,strName,ulState)";
       DeviceStatusChange.appendChild(
-        document.createTextNode("stateChange.EventALCOperator(IOpType,lALHandle,strName,ulState)")
+        document.createTextNode(
+          "stateChange.EventALCOperator(IOpType,lALHandle,strName,ulState)"
+        )
       );
       document.body.appendChild(DeviceStatusChange);
 
@@ -876,7 +942,7 @@ export default {
       if (ulState == 0) this.$message.error("打开视频失败!");
       if (ulState == 3) {
         if (this.monitorId != undefined) {
-          console.log("打开第二个视屏窗口", this.monitorId);
+          console.log("打开第三个视屏窗口", this.monitorId);
           let play = VSPOcxClient.PlayVideo(this.monitorId, 2);
           console.log(play);
         }
@@ -885,8 +951,8 @@ export default {
       if (ulState == 4) {
       }
     },
-    EventALCOperator(IOpType,lALHandle,strName,ulState){
-      console.log("报警服务变化",strName)
+    EventALCOperator(IOpType, lALHandle, strName, ulState) {
+      console.log("报警服务变化", strName);
     }
   },
 
@@ -895,11 +961,11 @@ export default {
     this.getDevices();
   },
   mounted() {
-    console.log(this.$store.state.userLogin);
+    console.log(this.carInfo.commodity);
     window.phoneListener = this;
     window.loginSuccess = this;
     window.resultRt = this;
-    window.stateChange =this;
+    window.stateChange = this;
     let version = VSPOcxClient.GetVersion();
     console.log("版本号", version);
     var ring = document.createElement("script");
@@ -907,7 +973,7 @@ export default {
     ring.event = "EventReady()";
     ring.appendChild(document.createTextNode("phoneListener.EventReady()"));
     document.body.appendChild(ring);
-    saveUserLogin(this);
+
     getCutoffReason({
       category_en: "except_open_gate"
     }).then(res => {
@@ -915,6 +981,7 @@ export default {
         this.abnormal = res.data.ANSWERS[0].ANS_COMM_DATA;
       }
     });
+    saveUserLogin(this);
   },
   computed: {
     ...mapState(["userLogin", "loginHandle", "deviceLists", "parkCodeList"])
@@ -960,7 +1027,7 @@ $fff: #fff;
         height: $mainWdth;
         // border: 1px solid #aaaaaa;
         .el-row {
-          height: 0.22 * $mainWdth;
+          height: 0.25 * $mainWdth;
           .el-col {
             width: $mainWdth;
             height: $mainWdth;
@@ -1062,7 +1129,7 @@ $fff: #fff;
             p {
               font-size: 12px;
               color: #343434;
-              line-height: 18px;
+              line-height: 24px;
               span:nth-child(2n + 1) {
                 font-weight: 700;
               }
@@ -1073,10 +1140,8 @@ $fff: #fff;
               border-radius: 20px;
               vertical-align: middle;
               color: $fff;
-              position: relative;
-              right: -130px;
-              // top: 20px;
               cursor: pointer;
+              margin-left: 200px;
             }
             .is-disabled {
               background: #ccc;
@@ -1152,24 +1217,24 @@ $fff: #fff;
       border-radius: 0;
       background: rgba(0, 0, 0, 0.1);
     }
-    .left {
-      /*三角箭头的颜色*/
-      scrollbar-arrow-color: #fff;
-      /*滚动条滑块按钮的颜色*/
-      scrollbar-face-color: #ffffff;
-      /*滚动条整体颜色*/
-      scrollbar-highlight-color: #fff;
-      /*滚动条阴影*/
-      scrollbar-shadow-color: #fff;
-      /*滚动条轨道颜色*/
-      scrollbar-track-color: #fff;
-      /*滚动条3d亮色阴影边框的外观颜色——左边和上边的阴影色*/
-      scrollbar-3dlight-color: #fff;
-      /*滚动条3d暗色阴影边框的外观颜色——右边和下边的阴影色*/
-      scrollbar-darkshadow-color: #fff;
-      /*滚动条基准颜色*/
-      scrollbar-base-color: #fff;
-    }
+    // .left {
+    //   /*三角箭头的颜色*/
+    //   scrollbar-arrow-color: #fff;
+    //   /*滚动条滑块按钮的颜色*/
+    //   scrollbar-face-color: #ffffff;
+    //   /*滚动条整体颜色*/
+    //   scrollbar-highlight-color: #fff;
+    //   /*滚动条阴影*/
+    //   scrollbar-shadow-color: #fff;
+    //   /*滚动条轨道颜色*/
+    //   scrollbar-track-color: #fff;
+    //   /*滚动条3d亮色阴影边框的外观颜色——左边和上边的阴影色*/
+    //   scrollbar-3dlight-color: #fff;
+    //   /*滚动条3d暗色阴影边框的外观颜色——右边和下边的阴影色*/
+    //   scrollbar-darkshadow-color: #fff;
+    //   /*滚动条基准颜色*/
+    //   scrollbar-base-color: #fff;
+    // }
     .center {
       height: $mainWdth;
       .grid-content {
@@ -1315,6 +1380,8 @@ $fff: #fff;
                   bottom: 0;
                   width: 40px;
                   color: $fff;
+                  font-size: 25px;
+                  cursor: pointer;
                 }
                 .reset {
                   border: 0;

@@ -119,8 +119,8 @@
                 clearable
                 size="small"
               >
-                <el-option value="1" label="按鍵呼叫"></el-option>
-                <el-option value="2" label="自動呼叫"></el-option>
+                <el-option value="1" label="按键呼叫"></el-option>
+                <el-option value="2" label="自动呼叫"></el-option>
               </el-select>
             </el-form-item>
           </div>
