@@ -21,7 +21,7 @@
       <el-table-column property="regionName" label="区域" width="150"></el-table-column>
       <el-table-column property="carId" label="车辆"></el-table-column>
       <el-table-column :formatter ="formatIntime" property="intime" label="进场时间"></el-table-column>
-      <el-table-column property="outtime" label="出场时间"></el-table-column>
+      <el-table-column :formatter="formatIntime" property="outtime" label="出场时间"></el-table-column>
     </el-table>
   </el-drawer>
 </template>

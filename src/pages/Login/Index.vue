@@ -35,7 +35,6 @@
         </div>
       </el-col>
     </el-row>
-   
   </div>
 </template>
 <script>
@@ -113,9 +112,13 @@ export default {
                     that.$store.commit("saveParkCodeList", parkCodeList);
                   })
                 );
-              this.$router.push({name:"longcutoff"})
               this.userLogin = res[0];
               this.$store.commit("saveUserLogin", this.userLogin);
+              if (this.$store.state.route) {
+                this.$router.push({ name: this.$store.state.route });
+              } else {
+                this.$router.push({ name: "longcutoff" });
+              }
             }
           });
         } else {
@@ -158,19 +161,16 @@ export default {
         usr_code: userCode //操作员名
       };
       return acctQueryOperatorByName(reqData, custId, session);
-    },
-   
+    }
   },
   mounted() {
-   
-
     if (sessionStorage.getItem("account")) {
       this.login.usr_code = JSON.parse(sessionStorage.getItem("account")).user;
       this.login.trade_pwd = JSON.parse(
         sessionStorage.getItem("account")
       ).trade_pwd;
     }
-    saveUserLogin(this);
+    // saveUserLogin(this);
   },
   computed: {
     ...mapState(["route"])

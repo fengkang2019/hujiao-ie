@@ -143,7 +143,7 @@
             classid="CLSID:DBD3400F-F12D-40C4-ACBF-3E1AE70F1558"
             width="1350"
             height="825"
-            style="z-index:-100;padding-top:0px;display:block"
+            style="padding-top:0px;display:block"
           >
             <param name="wmode" value="transparent" />
           </OBJECT>
@@ -382,9 +382,7 @@ export default {
   },
   methods: {
     //切换接听状态
-    handleClick() {
-      console.log(111);
-    },
+    handleClick() {},
     //确认开闸
     onSubmit() {
       this.cutOff();
@@ -423,6 +421,7 @@ export default {
       this.records2.push(item);
       this.state4 = true;
       this.state2 = false;
+      this.parkState = false;
       //能否接听
       this.isAnswered = false;
       if (!this.answering) {
@@ -593,22 +592,6 @@ export default {
     },
     //查询为接听数据
     searchRecord(status) {
-      // this.$axios
-      //   .post("/pagerSelect/searchRecord", {
-      //     status: status,
-      //     size: 10,
-      //     current: 1
-      //   })
-      //   .then(res => {
-      //     if (res.data.records.length > 0) {
-      //       this.records0 = res.data.records;
-      //     } else {
-      //       return false;
-      //     }
-      //   })
-      //   .catch(error => {
-      //     console.log(error);
-      //   });
       this.$axios
         .post("pagerSelect/latestSearchRecord", {
           status: status
@@ -650,7 +633,7 @@ export default {
       const reqData = {
         maxid: 0,
         maxcount: 20,
-        agent_id: "8010000000001",
+        agent_id: this.$store.state.userLogin.ent_cust_id,
         park_code: "",
         instart_datetime: "",
         inend_datetime: "",
@@ -726,12 +709,18 @@ export default {
         this.$axios
           .post("/pagerSelect/searchCarDetail", reqData)
           .then(res => {
-            if (JSON.stringify(res.data.assetsDetail) != "{}") {
+            if (
+              JSON.stringify(res.data.commodity) != "{}" ||
+              JSON.stringify(res.data.member) != "{}" ||
+              JSON.stringify(res.data.customCar) != "{}" ||
+              JSON.stringify(res.data.assetsDetail) != "{}"
+            ) {
               this.carInfo = res.data;
               this.groupId = res.data.member.id;
               this.loading2 = false;
             } else {
               this.$message.error("暂无车卡信息");
+              this.loading2 = false;
               return false;
             }
           })
@@ -986,7 +975,7 @@ export default {
       );
       document.body.appendChild(DeviceStatusChange);
 
-      this.SetOcxSize(1360, 825);
+      this.SetOcxSize(document.body.clientWidth*0.71, document.body.clientHeight*0.9);
       VSPOcxClient.SetLayout(4);
     },
     SetOcxSize(width, height) {
@@ -1022,7 +1011,8 @@ export default {
     this.getDevices();
   },
   mounted() {
-    console.log(this.carInfo.commodity);
+    // console.log("当前窗口高度",document.body.clientWidth,document.body.clientHeight)
+    console.log("登录信息",this.$store.state.userLogin)
     window.phoneListener = this;
     window.loginSuccess = this;
     window.resultRt = this;
@@ -1086,9 +1076,8 @@ $fff: #fff;
       .grid-content {
         width: $mainWdth;
         height: $mainWdth;
-        // border: 1px solid #aaaaaa;
         .el-row {
-          height: 0.25 * $mainWdth;
+          height: 0.3 * $mainWdth;
           .el-col {
             width: $mainWdth;
             height: $mainWdth;
@@ -1116,10 +1105,6 @@ $fff: #fff;
             }
             .el-tab-pane {
               padding: 10px;
-
-              // #pane-first{
-              //   height: 100%;
-              // }
               div.visible {
                 width: 100%;
                 padding-bottom: 30px;
@@ -1144,7 +1129,6 @@ $fff: #fff;
                   right: -130px;
                   top: 10px;
                   cursor: pointer;
-
                   span:nth-child(1) {
                     font-size: 20px;
                   }
@@ -1202,7 +1186,7 @@ $fff: #fff;
               vertical-align: middle;
               color: $fff;
               cursor: pointer;
-              margin-left: 200px;
+              margin-left: 60%;
             }
             .is-disabled {
               background: #ccc;
@@ -1304,77 +1288,6 @@ $fff: #fff;
         overflow: hidden;
         #VSPOcxClient {
           z-index: -9999;
-        }
-        .caller {
-          height: 0.5 * $mainWdth;
-          border: 1px solid #aaaaaa;
-          box-sizing: border-box;
-          position: relative;
-          #callerVideo {
-            width: $mainWdth;
-            height: $mainWdth;
-          }
-          .callerDiv {
-            width: $mainWdth;
-            height: $mainWdth;
-            position: absolute;
-            top: 0;
-            left: 0;
-            background: #ccc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            .innerCallerDiv {
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              flex-direction: column;
-              span.iconfont {
-                font-size: 50px;
-                color: #bbb;
-              }
-              span {
-                font-size: 14px;
-                color: #aaa;
-              }
-            }
-          }
-        }
-        .monitor {
-          height: 0.5 * $mainWdth;
-          border: 1px solid #aaaaaa;
-          box-sizing: border-box;
-          margin-top: 2px;
-          position: relative;
-          #monitorVideo {
-            width: $mainWdth;
-            height: $mainWdth;
-          }
-          .monitorDiv {
-            width: $mainWdth;
-            height: $mainWdth;
-            position: absolute;
-            top: 0;
-            left: 0;
-            background: #ccc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            .innerMonitorDiv {
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              flex-direction: column;
-              span.iconfont {
-                font-size: 50px;
-                color: #bbb;
-              }
-              span {
-                font-size: 14px;
-                color: #aaa;
-              }
-            }
-          }
         }
       }
     }
@@ -1514,9 +1427,6 @@ $fff: #fff;
                           background: blue;
                           padding: 0;
                           display: -ms-inline-grid;
-                          .el-select__caret {
-                            // height: 20px;
-                          }
                         }
                       }
                     }
