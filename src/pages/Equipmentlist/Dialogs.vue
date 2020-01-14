@@ -3,7 +3,7 @@
     :title="flag=='1'?'新增':flag=='2'?'编辑':'详情'"
     :visible="visibleFlag"
     :before-close="handleClose"
-    width="25%"
+     width="25%"
   >
     <el-form :model="currentData" class="dialog" :disabled="flag=='3'" :rules="rules" ref="myForm">
       <el-form-item
@@ -57,7 +57,13 @@
             :label="item.name"
             :value="item.gate_code"
           ></el-option>
-          <el-option   v-show="isTrue" v-for="(item,i) in gates"  :key="i+9999" :label="item.name" :value="item.gate_code"></el-option>
+          <el-option
+            v-show="isTrue"
+            v-for="(item,i) in gates"
+            :key="i+9999"
+            :label="item.name"
+            :value="item.gate_code"
+          ></el-option>
         </el-select>
       </el-form-item>
 
@@ -90,6 +96,7 @@
           v-model="currentData.cameraId"
           autocomplete="off"
           placeholder="请输入设备ID"
+          maxlength="5"
         ></el-input>
       </el-form-item>
       <el-form-item label="监控ID" :label-width="formLabelWidth" prop="monitorId">
@@ -98,6 +105,7 @@
           v-model="currentData.monitorId"
           autocomplete="off"
           placeholder="请输入监控ID"
+          maxlength="5"
         ></el-input>
       </el-form-item>
       <el-form-item label="版本号" :label-width="formLabelWidth" prop="devVer">
@@ -114,6 +122,7 @@
           v-model="currentData.activeDate"
           autocomplete="off"
           placeholder="日期格式:20191010"
+          maxlength="8"
         ></el-input>
       </el-form-item>
       <el-form-item label="到期日期" :label-width="formLabelWidth" prop="endDate">
@@ -122,6 +131,7 @@
           v-model="currentData.endDate"
           placeholder="日期格式:20191010"
           autocomplete="off"
+          maxlength="8"
         ></el-input>
       </el-form-item>
       <el-form-item v-show="flag=='3'" label="最后编辑日期" :label-width="formLabelWidth">
@@ -130,6 +140,7 @@
           v-model="currentData.heartTime"
           autocomplete="off"
           placeholder="日期格式:20190101121212"
+          maxlength="14"
         ></el-input>
       </el-form-item>
       <el-form-item v-show="flag=='3'" label="编辑人员" :label-width="formLabelWidth">
@@ -142,8 +153,8 @@
       </el-form-item>
     </el-form>
     <div v-show="flag!='3'" slot="footer" class="dialog-footer">
-      <el-button size="small" @click="cancel">取 消</el-button>
-      <el-button size="small" type="primary" @click="dialogFormVisible(currentData)">确 定</el-button>
+      <el-button size="small" class="btn" @click="cancel">取 消</el-button>
+      <el-button size="small" class="btn" type="primary" @click="dialogFormVisible(currentData)">确 定</el-button>
     </div>
   </el-dialog>
 </template>
@@ -202,6 +213,9 @@ export default {
             this.$parent.confirmAdd(currentData);
           } else if (this.flag == "2") {
             console.log("编辑");
+            if (currentData.monitorId == "") {
+              currentData.monitorId = 0;
+            }
             this.$parent.confirmEdit(currentData);
           }
         } else {
@@ -220,14 +234,14 @@ export default {
     //选择停车场得到区域
     chooseParkCode(val) {
       this.currentData.regionCode = "";
-      this.isTrue =false;
+      this.isTrue = false;
       const reqData = {
         park_code: val
       };
       queryRegionCode(
         reqData,
-        this.$store.state.userLogin.cust_id,
-        this.$store.state.userLogin.session
+        this.userLogin.cust_id,
+        this.userLogin.session
       ).then(res => {
         if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
           this.regionCodeList = [];
@@ -246,8 +260,8 @@ export default {
       };
       queryGate(
         reqData,
-        this.$store.state.userLogin.cust_id,
-        this.$store.state.userLogin.session
+        this.userLogin.cust_id,
+        this.userLogin.session
       ).then(res => {
         if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
           this.GateCodeList = [];

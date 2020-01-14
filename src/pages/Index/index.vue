@@ -143,16 +143,9 @@ export default {
     };
   },
   methods: {
-    handleOpen(key, keyPath) {
-      // console.log(key, keyPath);
-    },
-    handleClose(key, keyPath) {
-      // console.log(key, keyPath);
-    },
-    selectOptions(index, indexPath) {
-      // console.log(index, indexPath);
-      // console.log(this.active);
-    },
+    handleOpen(key, keyPath) {},
+    handleClose(key, keyPath) {},
+    selectOptions(index, indexPath) {},
     loginOut(val) {
       if (val == "loginOut") {
         this.$store.commit("saveRoute", this.$route.name);
@@ -166,6 +159,7 @@ export default {
       this.user = this.$store.state.userLogin.ent_name;
     }
     saveUserLogin(this);
+
   },
   computed: {
     ...mapState(["userLogin"])

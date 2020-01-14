@@ -92,7 +92,12 @@
         <el-table-column fixed prop="devVer" label="版本号" width="80"></el-table-column>
         <el-table-column :formatter="formatter" fixed prop="addTime" label="添加时间" width="150"></el-table-column>
         <el-table-column fixed prop="cameraId" label="设备ID"></el-table-column>
-        <el-table-column fixed prop="monitorId" label="监控ID"></el-table-column>
+        <el-table-column
+          :formatter="(row=>row.monitorId==0||row.monitorId==null?'-':row.monitorId)"
+          fixed
+          prop="monitorId"
+          label="监控ID"
+        ></el-table-column>
         <el-table-column :formatter="formatter2" fixed prop="activeDate" label="启用时间"></el-table-column>
         <el-table-column
           key="1"
@@ -265,7 +270,7 @@ export default {
     },
     //点击编辑
     handleClickEdit(val) {
-      this.visibleFlag = true;
+      // this.visibleFlag = true;
       this.flag = "2";
       this.currentData = val;
       let parkCode = val.parkCode;
@@ -288,7 +293,6 @@ export default {
     },
     //点击详情
     handleClickDetails(row) {
-      this.visibleFlag = true;
       this.flag = "3";
       this.currentData = row;
       let parkCode = row.parkCode;
@@ -396,13 +400,14 @@ export default {
     getRegionCode(parkCode) {
       queryRegionCode(
         { park_code: parkCode },
-        this.$store.state.userLogin.cust_id,
-        this.$store.state.userLogin.session
+        this.userLogin.cust_id,
+        this.userLogin.session
       ).then(res => {
         if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
           let regionCodeList = [];
           regionCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
           this.regionCodeList = regionCodeList;
+          this.visibleFlag = true;
         } else {
           return false;
         }
@@ -415,8 +420,8 @@ export default {
           park_code: parkCode,
           region_code: regionCode
         },
-        this.$store.state.userLogin.cust_id,
-        this.$store.state.userLogin.session
+        this.userLogin.cust_id,
+        this.userLogin.session
       ).then(res => {
         if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
           let GateCodeList = [];

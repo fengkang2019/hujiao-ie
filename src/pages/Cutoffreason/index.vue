@@ -366,15 +366,6 @@ export default {
 .export {
   text-align: right;
 }
-
-.el-form-item__label {
-  background: #ececec;
-  height: 32px;
-  // margin-top: 5px;
-  width: 104px;
-  text-align: center;
-  line-height: 32px;
-}
 .el-row {
   background: #fff;
   .el-col {

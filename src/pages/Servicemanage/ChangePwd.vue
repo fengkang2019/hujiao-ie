@@ -39,10 +39,6 @@ export default {
     cancel() {
       this.$parent.closeDialog();
     },
-    // confirmPassword: "56a5ba871d9eea1b3233c376dea20088"
-    // cust_id: "4010000121642"
-    // new_pwd: "56a5ba871d9eea1b3233c376dea20088"
-    // pwd_type: 1
     confirm(form) {
       if (form.pwd === form.pwd2) {
         this.$refs.ruleChangePwd.validate(val => {

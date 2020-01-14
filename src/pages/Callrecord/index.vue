@@ -393,7 +393,7 @@ export default {
         let list = [];
         this.$axios
           .post("/pagerSelect/searchRecord", {
-            size: 1000,
+            size: 9999,
             current: 1
           })
           .then(res => {
@@ -406,24 +406,6 @@ export default {
     formatJson(filterVal, jsonData) {
       return jsonData.map((v, n) =>
         filterVal.map(j => {
-          // if (j == "callTime") {
-          //   let moment = this.$moment(v[j], "YYYYMMDDHHmmss");
-          //   v[j] = moment.format("YYYY-MM-DD HH:mm:ss");
-          // } else if (j == "startTime") {
-          //   let moment = this.$moment(v[j], "YYYYMMDDHHmmss");
-          //   v[j] = moment.format("YYYY-MM-DD HH:mm:ss");
-          // } else if (j == "type") {
-          //   v[j] = v[j] == 1 ? "按键呼叫" : "自动呼叫";
-          // } else if (j == "status") {
-          //   v[j] = v[j] == 0 ? "未处理" : v[j] == 1 ? "处理中" : "已处理";
-          // } else if (j == "waitTime") {
-          //   v[j] = v[j] + "s";
-          // } else if (j == "processTime") {
-          //   v[j] = v[j] + "s";
-          // } else if (j == "index") {
-          //   v[j] = n + 1;
-          // }
-          // return v[j];
           let moment;
           switch (j) {
             case "callTime":
@@ -538,7 +520,8 @@ export default {
         this.pieDatas3[1].value = val.waitThirty;
         this.pieDatas3[3].value = val.waitTwoMin;
       }
-    }
+    },
+    deep:true
   },
   mounted() {
     saveUserLogin(this);

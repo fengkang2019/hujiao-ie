@@ -17,7 +17,6 @@ axios.defaults.headers.post["Content-Type"] = 'application/x-www-form-urlencoded
 axios.interceptors.request.use(function (config) {
     //发送之前做的事
 
-    // config.headers['token'] = AUTH_TOKEN;
 
     return config;
 }, function (error) {

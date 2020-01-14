@@ -1,5 +1,5 @@
 <template>
-  <div class="login" ref="emergencyCommandPage">
+  <div class="login" ref="emergencyCommandPage" @keydown.enter="onSubmit(login)">
     <el-row>
       <el-col :span="14">
         <div class="grid-content bg-purple">
@@ -9,7 +9,7 @@
       <el-col class="rightCol" :span="10">
         <div class="grid-content bg-purple">
           <p>欢迎登陆运维平台</p>
-          <el-form :model="login" :rules="rules" ref="logForm" @keydown="confirmLogin(this.$event)">
+          <el-form :model="login" :rules="rules" ref="logForm">
             <el-form-item prop="usr_code">
               <el-input
                 placeholder="请输入用户名"
@@ -67,13 +67,6 @@ export default {
     };
   },
   methods: {
-    confirmLogin(event) {
-      if (event.keyCode == 13 || event.keyCode == 108) {
-        event.returnValue = false;
-        event.cancel = true;
-        this.onSubmit(this.login);
-      }
-    },
     onSubmit: function(login) {
       const that = this;
       this.$refs.logForm.validate(valid => {
@@ -170,7 +163,6 @@ export default {
         sessionStorage.getItem("account")
       ).trade_pwd;
     }
-    // saveUserLogin(this);
   },
   computed: {
     ...mapState(["route"])

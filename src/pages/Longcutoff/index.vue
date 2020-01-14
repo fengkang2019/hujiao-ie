@@ -1,7 +1,7 @@
 <template>
   <div id="cutoff">
     <el-row :gutter="4">
-      <el-col class="left" :span="5">
+      <el-col class="left" :span="5" style="padding-left:0">
         <div class="grid-content bg-purple">
           <el-row class="callrecord">
             <el-col id="calling">
@@ -14,10 +14,10 @@
                     v-for="(item,i) in answerData"
                     :key="i"
                   >
-                    <p>
+                    <!-- <p>
                       <span>呼叫器:</span>
                       <span>{{item.devNo}}</span>
-                    </p>
+                    </p>-->
                     <p>
                       <span>呼叫类型:</span>
                       <span>{{item.type==1?"按键呼叫":"自动呼叫"}}</span>
@@ -30,10 +30,14 @@
                       <span>停车场:</span>
                       <span>{{item.parkName}}</span>
                     </p>
-                    <p>
+                    <!-- <p>
                       <span>区域:</span>
                       <span>{{item.regionName}}</span>
-                    </p>
+                    </p>-->
+                    <el-button type="primary" @click="hangup()">
+                      <span class="iconfont icon-guaduan"></span>
+                      挂断
+                    </el-button>
                   </div>
                   <div class="hidden" v-show="!(answerData.length>0)">
                     <span class="iconfont icon-web__zanwujilu"></span>
@@ -98,7 +102,11 @@
                   <span>区域:</span>
                   <span>{{item.regionName}}</span>
                 </p>
-                <el-button @click="answer(item)" :disabled="isAnswered">
+                <el-button
+                  @click="answer(item)"
+                  :disabled="isAnswered"
+                  class="animated pulse infinite"
+                >
                   <span class="iconfont icon-dianhua"></span>
                   <span>接听</span>
                 </el-button>
@@ -143,7 +151,7 @@
             classid="CLSID:DBD3400F-F12D-40C4-ACBF-3E1AE70F1558"
             width="1350"
             height="825"
-            style="padding-top:0px;display:block"
+            style="padding-top:0px;display:block;z-index:-1"
           >
             <param name="wmode" value="transparent" />
           </OBJECT>
@@ -180,7 +188,6 @@
                   </el-form-item>
                 </div>
                 <div class="carType">
-                  <div class="carId">{{showCarId?showCarId:"--"}}</div>
                   <el-form-item>
                     <el-select
                       :class="form.carNumColor==1?'blue':form.carNumColor==2?'yellow':form.carNumColor==3?'green':'gray'"
@@ -193,6 +200,7 @@
                       <el-option key="green" class="green" label="绿牌" value="3"></el-option>
                     </el-select>
                   </el-form-item>
+                  <div class="carId">{{showCarId?showCarId:"--"}}</div>
                 </div>
               </el-col>
             </el-row>
@@ -234,7 +242,7 @@
               <el-col v-if="!state4">
                 <p>
                   <span>订单详情:</span>
-                  <span>{{carInfo.commodity&&JSON.stringify(carInfo.commodity)!="{}"?formatTime(carInfo.commodity.ordertime) +" "+ formatPayType(carInfo.commodity.payType) +" "+"支付渠道:"+ formarOrderState(carInfo.commodity.orderstate):'无'}}</span>
+                  <span>{{carInfo.commodity&&JSON.stringify(carInfo.commodity)!="{}"?formatTime(carInfo.commodity.ordertime)+" " +"支付渠道:"+ formatPayType(carInfo.commodity.payType) +" "+"支付状态:"+ formarOrderState(carInfo.commodity.orderstate):'无'}}</span>
                 </p>
                 <p>
                   <span>月卡车详情:</span>
@@ -280,11 +288,8 @@
                 <el-form-item>
                   <el-input size="small" v-model="form.remark" placeholder="请输入备注原因"></el-input>
                 </el-form-item>
-                <el-button type="primary" class="cutOff" @click="onSubmit">确认开闸</el-button>
-                <el-button type="primary" class="callOff" @click="hangup(recordsInfo)">
-                  <span class="iconfont icon-guaduan"></span>
-                  挂断
-                </el-button>
+                <el-button type="primary" class="cutOff" @click="cutOff">确认开闸</el-button>
+                <el-button type="primary" class="closeGate" @click="closeGate">确认关闸</el-button>
               </el-col>
             </el-row>
           </el-form>
@@ -326,7 +331,6 @@ export default {
       remark: "",
       detailFlag: false,
       state1: false,
-      state2: false,
       state4: true,
       //设备对应车场信息
       parkInfo: {},
@@ -339,16 +343,12 @@ export default {
       carInfo: {},
       // 车位信息
       groupId: "",
-
       tableDatas: [],
-
       carInfo2: [],
-
       //计费
       charge: [],
       abnormal: [],
       timer: "",
-      timer2: "",
       defaultProps: {
         children: "children",
         label: "label"
@@ -366,8 +366,6 @@ export default {
       isAnswered: false,
       onlineCount: 0,
       offlineCount: 0,
-      //当前窗口数
-      n: 0,
       devId: "",
       monitorId: "",
       deviceInfo: {},
@@ -383,10 +381,6 @@ export default {
   methods: {
     //切换接听状态
     handleClick() {},
-    //确认开闸
-    onSubmit() {
-      this.cutOff();
-    },
     //车位详情表格
     findDetail() {
       this.detailFlag = true;
@@ -413,14 +407,13 @@ export default {
         });
     },
     //挂断
-    hangup(item) {
+    hangup() {
       console.log("挂断电话");
       this.clearInfo();
       this.stopRT();
       this.records2 = [];
       this.records2.push(item);
       this.state4 = true;
-      this.state2 = false;
       this.parkState = false;
       //能否接听
       this.isAnswered = false;
@@ -445,9 +438,10 @@ export default {
             this.form.carNumColor = "1";
             this.state1 = true;
             this.state4 = false;
-            this.state2 = true;
             this.parkState = true;
             this.answering = true;
+            //改变接听的userNo
+            this.changeUserNo(item.id);
             //能否接听
             this.isAnswered = true;
             this.devicesInfo = res.data;
@@ -465,6 +459,19 @@ export default {
           console.log(error);
         });
     },
+    changeUserNo(id) {
+      const reqData = {
+        id: id,
+        userNo: this.userLogin.ent_name
+      };
+      this.$axios.post("/pagerUpdate/updateRecord", reqData).then(res => {
+        if (res.data.ans == 1) {
+          // this.$message.success("已成功插入一条记录");
+        } else {
+          // this.$message.error("更新失败");
+        }
+      });
+    },
     //点击刷新
     resetForm(form) {
       console.log(this.$refs.carform);
@@ -481,13 +488,13 @@ export default {
       this.$refs.carform.validate(val => {
         if (val) {
           // console.log("搜索车牌号" + form.carNum);
-          if (!this.answering) {
-            this.parkInfo = {
-              parkCode: this.deviceInfo.parkCode,
-              carType: form.carNumColor,
-              carId: form.carNum
-            };
-          }
+          // if (!this.answering) {
+          //   this.parkInfo = {
+          //     parkCode: this.deviceInfo.parkCode,
+          //     carType: form.carNumColor,
+          //     carId: form.carNum
+          //   };
+          // }
           //查入场车信息
           this.searchCarInfo();
           //查订单详情
@@ -515,8 +522,8 @@ export default {
         }
         queryCarId(
           reqData,
-          this.$store.state.userLogin.cust_id,
-          this.$store.state.userLogin.session
+          this.userLogin.cust_id,
+          this.userLogin.session
         ).then(res => {
           if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
             const carIdList = [];
@@ -547,13 +554,13 @@ export default {
       this.carInfo = {};
       this.carInfo2 = [];
       this.charge = [];
-      if (!this.answering) {
-        this.parkInfo = {
-          parkCode: this.deviceInfo.parkCode,
-          carType: this.form.carNumColor,
-          carId: item.value
-        };
-      }
+      // if (!this.answering) {
+      //   this.parkInfo = {
+      //     parkCode: this.deviceInfo.parkCode,
+      //     carType: this.form.carNumColor,
+      //     carId: item.value
+      //   };
+      // }
       //查入场车信息
       this.searchCarInfo();
       this.searchInCarInfos(item.value);
@@ -622,9 +629,7 @@ export default {
             return false;
           }
         })
-        .catch(error => {
-          console.log(error);
-        });
+        .catch(error => {});
     },
     // 查询 入场车信息
     searchInCarInfos(carId, carType) {
@@ -633,7 +638,7 @@ export default {
       const reqData = {
         maxid: 0,
         maxcount: 20,
-        agent_id: this.$store.state.userLogin.ent_cust_id,
+        agent_id: "8010000000001",
         park_code: "",
         instart_datetime: "",
         inend_datetime: "",
@@ -645,52 +650,89 @@ export default {
         car_id: carId,
         serialtype: "1"
       };
-
+      console.log("得到车牌", carId);
+      console.log(this.userLogin.cust_id, this.userLogin.session, reqData);
+      //查询入场信息
       getqueryDayParkSerialEX(
         reqData,
-        this.$store.state.userLogin.cust_id,
-        this.$store.state.userLogin.session
+        this.userLogin.cust_id,
+        this.userLogin.session
       ).then(res => {
         if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
           that.carInfo2 = res.data.ANSWERS[0].ANS_COMM_DATA;
           console.log(this.carInfo2);
           if (that.carInfo2.length > 0) {
-            console.log(that.carInfo2[0]);
-            this.showCarId = that.carInfo2[0].car_id;
-            this.form.carNumColor = that.carInfo2[0].cartype;
-            const reqData = {
-              car_id: that.carInfo2[0].car_id,
-              cartype: that.carInfo2[0].cartype,
-              intime: that.carInfo2[0].intime,
-              park_code: that.carInfo2[0].park_code,
-              region_code: that.carInfo2[0].region_code
-            };
-            if (carType) {
-              reqData.cartype = carType;
-            }
-            getqueryCharge(
-              reqData,
-              this.$store.state.userLogin.cust_id,
-              this.$store.state.userLogin.cust_id
-            ).then(res => {
-              if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
-                that.charge = res.data.ANSWERS[0].ANS_COMM_DATA;
-                this.loading1 = false;
-                console.log(that.charge);
-              } else {
-                this.$message.error("查询入场车辆计费失败");
-                this.loading1 = true;
-                return false;
-              }
-            });
+            // console.log(that.carInfo2[0]);
+            // this.showCarId = that.carInfo2[0].car_id;
+            // this.form.carNumColor = that.carInfo2[0].cartype;
+            // const reqData = {
+            //   car_id: that.carInfo2[0].car_id,
+            //   cartype: that.carInfo2[0].cartype,
+            //   intime: that.carInfo2[0].intime,
+            //   park_code: that.carInfo2[0].park_code,
+            //   region_code: that.carInfo2[0].region_code
+            // };
+            // if (carType) {
+            //   reqData.cartype = carType;
+            // }
+            // //查询车辆计费
+            // getqueryCharge(
+            //   reqData,
+            //   this.userLogin.cust_id,
+            //   this.userLogin.cust_id
+            // ).then(res => {
+            //   if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+            //     that.charge = res.data.ANSWERS[0].ANS_COMM_DATA;
+            //     this.loading1 = false;
+            //     console.log(that.charge);
+            //   } else {
+            //     this.$message.error("查询入场车辆计费失败");
+            //     this.loading1 = false;
+            //     return false;
+            //   }
+            // });
+            this.searchCarCharge(carType);
           } else {
-            this.$message.error("此设备暂无车辆入场信息");
-            this.loading1 = true;
+            this.$message.error("此设备暂无入场车辆信息");
+            this.loading1 = false;
             return false;
           }
         } else {
           this.$message.error("查询入场车辆失败");
-          this.loading1 = true;
+          this.loading1 = false;
+          return false;
+        }
+      });
+    },
+    //查询车辆计费
+    searchCarCharge(carType) {
+      console.log(this.carInfo2);
+      console.log(this.carInfo2[0]);
+      this.showCarId = this.carInfo2[0].car_id;
+      this.form.carNumColor = this.carInfo2[0].cartype;
+      const reqData = {
+        car_id: this.carInfo2[0].car_id,
+        cartype: this.carInfo2[0].cartype,
+        intime: this.carInfo2[0].intime,
+        park_code: this.carInfo2[0].park_code,
+        region_code: this.carInfo2[0].region_code
+      };
+      if (carType) {
+        reqData.cartype = carType;
+      }
+      //查询车辆计费
+      getqueryCharge(
+        reqData,
+        this.userLogin.cust_id,
+        this.userLogin.cust_id
+      ).then(res => {
+        if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+          this.charge = res.data.ANSWERS[0].ANS_COMM_DATA;
+          this.loading1 = false;
+          console.log(this.charge);
+        } else {
+          this.$message.error("查询入场车辆计费信息失败");
+          this.loading1 = false;
           return false;
         }
       });
@@ -719,7 +761,7 @@ export default {
               this.groupId = res.data.member.id;
               this.loading2 = false;
             } else {
-              this.$message.error("暂无车卡信息");
+              this.$message.error("暂无车卡订单信息");
               this.loading2 = false;
               return false;
             }
@@ -778,30 +820,44 @@ export default {
         this.searchRecord(1);
       }, 1000);
     },
+
     //开闸
     cutOff() {
       let cutoffResult = VSPOcxClient.OpenDO(this.devId, 1);
       console.log("开闸结果", cutoffResult);
     },
+    //关闸
+    closeGate() {
+      let closeResult = VSPOcxClient.OpenDO(this.devId, 2);
+      console.log("关闸结果", closeResult);
+    },
     //主动打开 监控摄像头
     handleNodeClick(device) {
       this.stopAllRT();
       if (device.action == 1) {
+        if (this.currentDeviceId) {
+          this.changeStatus();
+        }
         this.clearInfo();
-        this.state2 = true;
         this.deviceInfo = device;
         this.answering = false;
         this.parkState = true;
         console.log(device.devId);
         this.devId = device.devId;
         this.monitorId = device.monitorId;
-        let playFlag = VSPOcxClient.PlayVideo(device.devId, 0);
-        console.log(playFlag, "主动打开视频1");
+        if (this.monitorId && this.devId) {
+          let playFlagM = VSPOcxClient.PlayVideo(device.monitorId, 2);
+        } else {
+          let playFlag = VSPOcxClient.PlayVideo(device.devId, 0);
+          console.log(playFlag, "主动打开视频1");
+        }
         this.insertRecord(device);
+        this.searchDevParkInfo(device);
       }
     },
     //主动插入呼叫记录
     insertRecord(device) {
+      console.log("插入的名字", this.userLogin.ent_name);
       this.$axios
         .post("/pagerInsert/insertRecord", {
           parkCode: device.parkCode,
@@ -809,7 +865,7 @@ export default {
           type: "2",
           status: "1",
           devNo: device.devNo,
-          userNo: this.$store.state.userLogin.ent_name,
+          userNo: this.userLogin.ent_name,
           callTime: this.$moment().format("YYYYMMDDHHmmss"),
           startTime: this.$moment().format("YYYYMMDDHHmmss"),
           endTime: "",
@@ -848,8 +904,6 @@ export default {
       this.$axios.post("/pagerInsert/insertHeartLog", reqData).then(res => {
         if (res.data.msg == 1) {
           this.$message.success("插入心跳日志成功");
-        } else {
-          this.$messsage.error("插入心跳日志失败");
         }
       });
     },
@@ -898,29 +952,44 @@ export default {
     formarOrderState(val) {
       switch (val) {
         case 1:
-          return "带确认";
+          return "待确认";
+          break;
         case 2:
           return "确认";
+          break;
         case 3:
           return "待支付";
+          break;
         case 4:
           return "支付成功";
+          break;
         case 5:
           return "取消";
+          break;
         case 6:
           return "待退款";
+          break;
         case 7:
           return "退款成功";
+          break;
         case 8:
           return "失败";
+          break;
         case 9:
           return "待发货";
+          break;
         case 10:
           return "已发货";
+          break;
         case 11:
+          return "待收货";
+          break;
+        case 12:
           return "已收货";
-        default:
+          break;
+        case 13:
           return "交易完成";
+          break;
       }
       // ("1待确认 2确认 3待支付 4支付成功 5取消 6待退款 7退款成功 8失败 9待发货 10 已发货 11待收货 12已收货 13交易完成");
       // ("1 微信 2 支付宝");
@@ -929,14 +998,56 @@ export default {
       switch (val) {
         case 1:
           return "微信";
+          break;
         case 2:
           return "支付宝";
+          break;
+        case 3:
+          return "岗亭";
+          break;
+        case 4:
+          return "余额";
+          break;
+        case 6:
+          return "建行无感";
+          break;
+        case 7:
+          return "工行无感";
+          break;
+        case 8:
+          return "农行无感";
+          break;
+        case 9:
+          return "招行无感";
+          break;
+        case 10:
+          return "建行聚合";
+          break;
+        case 11:
+          return "工行聚合";
+          break;
+        case 12:
+          return "农行聚合";
+          break;
+        case 13:
+          return "招行聚合";
+          break;
+        case 14:
+          return "农行";
+          break;
+        case 15:
+          return "建行";
+          break;
+        case 16:
+          return "工行";
+          break;
+        case 20:
+          return "优惠券";
         default:
-          return "";
+          return "其他";
       }
     },
     EventReady() {
-      console.log(11);
       let success = VSPOcxClient.LoginServer(
         process.env.EQUIPMENT_IP,
         "9534",
@@ -975,7 +1086,22 @@ export default {
       );
       document.body.appendChild(DeviceStatusChange);
 
-      this.SetOcxSize(document.body.clientWidth*0.71, document.body.clientHeight*0.9);
+      //分组
+      let group = document.createElement("script");
+      group.setAttribute("for", "VSPOcxClient");
+      group.event =
+        "EventGroupOperator(lOpType,ulGroupID,ulParentGroupID,ulGroupType,strName)";
+      group.appendChild(
+        document.createTextNode(
+          "groupName.EventGroupOperator(lOpType,ulGroupID,ulParentGroupID,ulGroupType,strName)"
+        )
+      );
+      document.body.appendChild(group);
+
+      this.SetOcxSize(
+        document.body.clientWidth * 0.71,
+        document.body.clientHeight * 0.9
+      );
       VSPOcxClient.SetLayout(4);
     },
     SetOcxSize(width, height) {
@@ -985,15 +1111,17 @@ export default {
     },
     EventCameraPlayRTState(ulCameraID, ulState) {
       console.log("监听播放结果", ulCameraID, ulState);
-      if (ulState == 0) this.$message.error("打开视频失败!");
+      if (ulState == 0) {
+        this.$message.error("打开视频失败!");
+      }
       if (ulState == 3) {
         //插入心跳日志
         if (!this.answering) {
           this.insertHeart();
         }
-        if (this.monitorId != undefined) {
+        if (this.monitorId != undefined && this.monitorId != 0) {
           console.log("打开第三个视屏窗口", this.monitorId);
-          let play = VSPOcxClient.PlayVideo(this.monitorId, 2);
+          let play = VSPOcxClient.PlayVideo(this.devId, 0);
           console.log(play);
         }
         this.state4 = false;
@@ -1003,6 +1131,22 @@ export default {
     },
     EventALCOperator(IOpType, lALHandle, strName, ulState) {
       console.log("报警服务变化", strName);
+    },
+    EventGroupOperator(
+      lOpType,
+      ulGroupID,
+      ulParentGroupID,
+      ulGroupType,
+      strName
+    ) {
+      console.log(
+        "分组名称",
+        lOpType,
+        ulGroupID,
+        ulParentGroupID,
+        ulGroupType,
+        strName
+      );
     }
   },
 
@@ -1011,12 +1155,12 @@ export default {
     this.getDevices();
   },
   mounted() {
-    // console.log("当前窗口高度",document.body.clientWidth,document.body.clientHeight)
-    console.log("登录信息",this.$store.state.userLogin)
+    console.log("用户登录信息", this.userLogin);
     window.phoneListener = this;
     window.loginSuccess = this;
     window.resultRt = this;
     window.stateChange = this;
+    window.groupName = this;
     let version = VSPOcxClient.GetVersion();
     console.log("版本号", version);
     var ring = document.createElement("script");
@@ -1035,11 +1179,10 @@ export default {
     saveUserLogin(this);
   },
   computed: {
-    ...mapState(["userLogin", "loginHandle", "deviceLists", "parkCodeList"])
+    ...mapState(["userLogin"])
   },
   beforeDestroy() {
     clearInterval(this.timer);
-    clearInterval(this.timer2);
   },
   beforeRouteLeave(to, from, next) {
     if (from.name == "longcutoff") {
@@ -1047,8 +1190,14 @@ export default {
       let loginOutResult = VSPOcxClient.LogoutServer();
       console.log(loginOutResult, "登出结果");
       this.isAnswered = false;
+      if (this.currentDeviceId) {
+        this.changeStatus();
+      }
     }
     next();
+  },
+  destoryed() {
+    console.log("监听页面销毁", 111);
   }
 };
 </script>
@@ -1073,6 +1222,7 @@ $fff: #fff;
     .left {
       height: $mainWdth;
       overflow-y: scroll;
+      border: 1px solid #aaaaaa;
       .grid-content {
         width: $mainWdth;
         height: $mainWdth;
@@ -1081,7 +1231,7 @@ $fff: #fff;
           .el-col {
             width: $mainWdth;
             height: $mainWdth;
-            border-bottom: 1px solid #aaaaaa;
+
             .el-tabs__nav-next {
               display: none;
             }
@@ -1095,6 +1245,7 @@ $fff: #fff;
               color: $fff;
               font-size: 14px;
               line-height: 30px;
+              font-weight: 700;
             }
             .el-tabs__header {
               margin: 0;
@@ -1135,6 +1286,16 @@ $fff: #fff;
                   span:nth-child(2) {
                     font-size: 16px;
                   }
+                }
+                .el-button {
+                  border: 0;
+                  border-radius: 20px;
+                  background: #e74c2d;
+                  margin-left: 50%;
+                  cursor: pointer;
+                }
+                .is-disabled {
+                  background: #ccc;
                 }
               }
               div.hidden {
@@ -1186,7 +1347,8 @@ $fff: #fff;
               vertical-align: middle;
               color: $fff;
               cursor: pointer;
-              margin-left: 60%;
+              margin-left: 50%;
+              margin-bottom: 10px;
             }
             .is-disabled {
               background: #ccc;
@@ -1282,6 +1444,9 @@ $fff: #fff;
     }
     .center {
       height: $mainWdth;
+      border-top: 1px solid #aaaaaa;
+      border-bottom: 1px solid #aaaaaa;
+
       .grid-content {
         width: $mainWdth;
         height: $mainWdth;
@@ -1395,7 +1560,9 @@ $fff: #fff;
                 font-size: 16px;
                 height: 30px;
                 line-height: 30px;
-                margin-right: 30px;
+                margin-left: 30px;
+                font-weight: 800;
+                color: #e74c2d;
               }
               .el-form-item {
                 width: 100px;
@@ -1463,27 +1630,6 @@ $fff: #fff;
                   }
                 }
               }
-
-              // span {
-              //   // display: block;
-              //   font-size: 12px;
-              //   font-weight: 700;
-              //   padding: 0 10px;
-              // }
-              // span:nth-child(1) {
-              //   background: #3c539f;
-              //   color: $fff;
-              // }
-              // span:nth-child(3) {
-              //   border-left: 3px solid #000;
-              // }
-              // div.carId {
-              //   width: 80px;
-              //   height: 22px;
-              //   text-align: center;
-              //   font-weight: 600;
-              //   line-height: 24px;
-              // }
             }
           }
         }
@@ -1500,6 +1646,9 @@ $fff: #fff;
               line-height: 25px;
               span:nth-child(2n + 1) {
                 font-weight: 700;
+                font-size: 16px;
+              }
+              span:nth-child(2n) {
                 font-size: 14px;
               }
               span.red {
@@ -1532,6 +1681,10 @@ $fff: #fff;
               justify-content: space-between;
               line-height: 25px;
               span:nth-child(2n + 1) {
+                font-weight: 700;
+                font-size: 16px;
+              }
+              span:nth-child(2n) {
                 font-weight: 700;
                 font-size: 14px;
               }
@@ -1601,25 +1754,15 @@ $fff: #fff;
               }
             }
             .el-button {
-              width: 0.6 * $mainWdth;
+              width: 0.45 * $mainWdth;
               background: #0fab00;
               border-radius: 20px;
               margin-top: 10px;
               border: 0;
               font-weight: 600;
             }
-            .callOff {
-              width: 0.3 * $mainWdth;
-              background: #e74c2d;
-              border-radius: 20px;
-              margin-top: 10px;
-              border: 0;
-              margin-left: 35px;
-              font-weight: 600;
-            }
             .is-disabled {
               background: #ccc;
-              border: 0;
             }
           }
         }

@@ -10,7 +10,7 @@
             @change="chooseParkCode(form.parkCode)"
             filterable
           >
-            <el-option vlaue label="全部"></el-option>
+            <el-option label="全部" value=""></el-option>
             <el-option
               v-for="(item,i) in parkCodeList"
               :key="i"
@@ -209,8 +209,8 @@ export default {
       console.log(reqData);
       acctSetCustPwd(
         reqData,
-        this.$store.state.userLogin.cust_id,
-        this.$store.state.userLogin.session
+        this.userLogin.cust_id,
+        this.userLogin.session
       ).then(res => {
         if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
           this.$message.success("修改密码成功");
@@ -318,39 +318,33 @@ export default {
 </script>
 <style lang="scss">
 #service {
-  .el-form {
-    .btn {
-      margin-top: 5px;
-    }
+  .searchForm {
+    padding: 20px 10px 0 10px;
+    background: #fff;
   }
-}
+  .tableInfo {
+    margin-top: 20px;
+    padding: 10px;
+    background: #fff;
+  }
+  .marginTop {
+    margin-top: 10px;
+  }
+  .tr {
+    text-align: right;
+    letter-spacing: 1px;
+  }
+  .margintb {
+    margin: 15px 0;
+  }
+  .red {
+    color: red;
+  }
+  .btn {
+    background: #3e549d;
+    margin-top:3px; 
+  }
 
-.searchForm {
-  padding: 20px 10px 0 10px;
-  background: #fff;
-}
-.tableInfo {
-  margin-top: 20px;
-  padding: 10px;
-  background: #fff;
-}
-.marginTop {
-  margin-top: 10px;
-}
-.tr {
-  text-align: right;
-  letter-spacing: 1px;
-}
-.margintb {
-  margin: 15px 0;
-}
-.red {
-  color: red;
-}
-.btn {
-  background: #3e549d;
-}
-#service {
   .el-form-item__content {
     line-height: 40px;
   }
