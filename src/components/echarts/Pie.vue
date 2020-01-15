@@ -57,7 +57,7 @@ export default {
             roseType: true,
             label: {
               normal: {
-                formatter: "{b}"
+                formatter: "{b}:{d}%"
               }
             },
             // data: [

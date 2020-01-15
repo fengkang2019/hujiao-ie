@@ -142,6 +142,7 @@
     <el-row v-if="value==2" class="downRow" type="flex" justify="space-between">
       <el-col style="width:49.5%">
         <Pie
+          v-if="echartsFlag"
           chartId="Pie1"
           height="100%"
           width="100%"
@@ -153,6 +154,7 @@
       </el-col>
       <el-col style="width:49.5%">
         <Pie
+          v-if="echartsFlag"
           chartId="Pie2"
           height="100%"
           width="100%"
@@ -166,6 +168,7 @@
     <el-row v-if="value==2" class="downRow" type="flex" justify="space-between">
       <el-col style="width:49.5%">
         <Pie
+          v-if="echartsFlag"
           chartId="Pie3"
           height="100%"
           width="100%"
@@ -177,6 +180,7 @@
       </el-col>
       <el-col style="width:49.5%">
         <Pie
+          v-if="echartsFlag"
           chartId="Pie4"
           height="100%"
           width="100%"
@@ -284,7 +288,10 @@ export default {
         }
       },
       tableData: [],
-      pieDatas1: [{ value: 0, name: "未接听" }, { value: 0, name: "已接听" }],
+      pieDatas1: [
+        { value: 0, name: "未接听" },
+        { value: 0, name: "已接听" }
+      ],
 
       pieDatas2: [
         { value: 0, name: "按键呼叫" },
@@ -306,7 +313,8 @@ export default {
       ],
       regionCodeList: [],
       echartData: {},
-      loading: false
+      loading: false,
+      echartsFlag: true
     };
   },
   methods: {
@@ -465,13 +473,17 @@ export default {
     },
     //查询统计图表
     searchEchartsData() {
+      this.echartsFlag = false;
       this.$axios
         .post("/pagerSelect/countInfo", {
-          parkCode: this.form.parkCode
+          parkCode: this.form.parkCode,
+          regionCode: this.form.regionCode,
+          userNo: this.form.userNo
         })
         .then(res => {
           if (JSON.stringify(res.data) != "{}") {
             this.echartData = res.data;
+            this.echartsFlag = true;
           }
         });
     },
@@ -519,9 +531,9 @@ export default {
         this.pieDatas3[2].value = val.waitSixty;
         this.pieDatas3[1].value = val.waitThirty;
         this.pieDatas3[3].value = val.waitTwoMin;
-      }
-    },
-    deep:true
+      },
+      deep: true
+    }
   },
   mounted() {
     saveUserLogin(this);
@@ -532,7 +544,6 @@ export default {
 
 <style lang="scss" >
 #call {
-  height: 100vh;
   .downRow {
     margin-top: 10px;
     background: #f2f3f7;
@@ -583,16 +594,6 @@ export default {
       text-align: center;
     }
   }
-}
-
-.el-form-item__label {
-  background: #f2f3f7;
-  height: 32px;
-  // margin-top: 5px;
-  width: 104px;
-  text-align: center;
-  line-height: 32px;
-  font-size: 12px;
 }
 .export {
   text-align: right;
