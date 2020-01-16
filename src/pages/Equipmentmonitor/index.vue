@@ -54,13 +54,13 @@
         <span>故障</span>
       </el-col>
     </el-row>
-    <el-row class="contentRow">
+    <el-row class="contentRow" v-loading="loading">
       <el-col class="contentCol" v-for="(item,i) in deviceStatusList" :key="i">
         <div class="grid-content bg-purple contentDiv" @mouseenter="getHeartInfo(item)">
           <div class="imageDiv">
-          <img v-show="item.heartTime==1" src="@/assets/images/online.png" />
-          <img v-show="item.heartTime==2" src="@/assets/images/offline.png" />
-          <img v-show="item.heartTime==3" src="@/assets/images/breakdown.png" />
+            <img v-show="item.heartTime==1" src="@/assets/images/online.png" />
+            <img v-show="item.heartTime==2" src="@/assets/images/offline.png" />
+            <img v-show="item.heartTime==3" src="@/assets/images/breakdown.png" />
           </div>
           <p>所属停车场:</p>
           <p>{{item.parkName}}</p>
@@ -94,7 +94,8 @@ export default {
       },
       regionCodeList: [],
       deviceStatusList: [],
-      heartInfo: []
+      heartInfo: [],
+      loading: false
     };
   },
   computed: {
@@ -105,18 +106,19 @@ export default {
   },
   methods: {
     search: function(form) {
+      this.loading = true;
       this.$axios
         .post("/pagerSelect/getDeviceState", {
           devNo: "",
           size: 100,
           current: 1,
-          parkCode:form.parkCode,
-          regionCode:form.regionCode,
+          parkCode: form.parkCode,
+          regionCode: form.regionCode
         })
         .then(res => {
           if (res.data.records.length > 0) {
             this.deviceStatusList = res.data.records;
-            console.log(this.deviceStatusList);
+            this.loading = false;
           } else {
             this.$message.error("暂无设备状态信息!");
           }
@@ -140,7 +142,7 @@ export default {
       });
     },
     getHeartInfo(val) {
-      this.heartInfo=[];
+      this.heartInfo = [];
       if (this.heartInfo.length == 0) {
         this.$axios
           .post("/pagerSelect/searchHeart", {
@@ -225,9 +227,9 @@ export default {
         border: 1px solid #e0e0e0;
         text-align: center;
         position: relative;
-        div.imageDiv{
-           margin-top: 10px;
-           height:137px;
+        div.imageDiv {
+          margin-top: 10px;
+          height: 137px;
         }
         p {
           width: 100%;

@@ -662,36 +662,36 @@ export default {
           that.carInfo2 = res.data.ANSWERS[0].ANS_COMM_DATA;
           console.log(this.carInfo2);
           if (that.carInfo2.length > 0) {
-            // console.log(that.carInfo2[0]);
-            // this.showCarId = that.carInfo2[0].car_id;
-            // this.form.carNumColor = that.carInfo2[0].cartype;
-            // const reqData = {
-            //   car_id: that.carInfo2[0].car_id,
-            //   cartype: that.carInfo2[0].cartype,
-            //   intime: that.carInfo2[0].intime,
-            //   park_code: that.carInfo2[0].park_code,
-            //   region_code: that.carInfo2[0].region_code
-            // };
-            // if (carType) {
-            //   reqData.cartype = carType;
-            // }
-            // //查询车辆计费
-            // getqueryCharge(
-            //   reqData,
-            //   this.userLogin.cust_id,
-            //   this.userLogin.cust_id
-            // ).then(res => {
-            //   if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
-            //     that.charge = res.data.ANSWERS[0].ANS_COMM_DATA;
-            //     this.loading1 = false;
-            //     console.log(that.charge);
-            //   } else {
-            //     this.$message.error("查询入场车辆计费失败");
-            //     this.loading1 = false;
-            //     return false;
-            //   }
-            // });
-            this.searchCarCharge(carType);
+            console.log(that.carInfo2[0]);
+            this.showCarId = that.carInfo2[0].car_id;
+            this.form.carNumColor = that.carInfo2[0].cartype;
+            const reqData = {
+              car_id: that.carInfo2[0].car_id,
+              cartype: that.carInfo2[0].cartype,
+              intime: that.carInfo2[0].intime,
+              park_code: that.carInfo2[0].park_code,
+              region_code: that.carInfo2[0].region_code
+            };
+            if (carType) {
+              reqData.cartype = carType;
+            }
+            //查询车辆计费
+            getqueryCharge(
+              reqData,
+              this.userLogin.cust_id,
+              this.userLogin.cust_id
+            ).then(res => {
+              if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+                that.charge = res.data.ANSWERS[0].ANS_COMM_DATA;
+                this.loading1 = false;
+                console.log(that.charge);
+              } else {
+                this.$message.error("查询入场车辆计费失败");
+                this.loading1 = false;
+                return false;
+              }
+            });
+            // this.searchCarCharge(carType);
           } else {
             this.$message.error("此设备暂无入场车辆信息");
             this.loading1 = false;
@@ -1195,10 +1195,8 @@ export default {
       }
     }
     next();
-  },
-  destoryed() {
-    console.log("监听页面销毁", 111);
   }
+ 
 };
 </script>
 

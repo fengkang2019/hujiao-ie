@@ -6,7 +6,6 @@ let AUTH_TOKEN = "";
 
 //设置基路径
 axios.defaults.baseURL = process.env.API_ROOT;
-// axios.defaults.headers.common['token'] = AUTH_TOKEN;//token 
 axios.defaults.headers.post["Content-Type"] = 'application/x-www-form-urlencoded';
 
 

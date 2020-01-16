@@ -19,7 +19,6 @@ const store = new Vuex.Store({
         //保存登录返回的数据
         saveUserLogin(state, userLogin) {
             state.userLogin = userLogin
-            // Object.assign(state.userLogin,userLogin)
         },
         saveRoute(state, route) {
             state.route = route;

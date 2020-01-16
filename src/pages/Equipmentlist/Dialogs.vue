@@ -278,13 +278,6 @@ export default {
 
   mounted() {
     saveUserLogin(this);
-    // getCutoffReason({
-    //   category_en: "except_open_gate"
-    // }).then(res => {
-    //   if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
-    //     this.abnormal = res.data.ANSWERS[0].ANS_COMM_DATA;
-    //   }
-    // });
   }
 };
 </script>

@@ -40,27 +40,12 @@ Vue.prototype.$axios = axios;
 
 //全局配置图片查看器插件
 import ImageViewer from "vue2-viewer";
-Vue.use(ImageViewer)
+Vue.use(ImageViewer);
+
+//全局注册组件
+import "@/utils/component";
 
 
-// let dhweb = new DHAlarmWeb();
-// Vue.prototype.$dhweb = dhweb;
-
-
-
-// router.beforeEach((to, from, next) => {
-//   console.log(to);
-//   console.log(from);
-//   console.log(next);
-//   if (to.name == "longcutoff") {
-//     Vue.prototype.$dhweb.login("fly001", "fly123456", process.env.EQUIPMENT_IP);
-//     Vue.prototype.$dhweb.onLogin = function (data) {
-//       console.log(data)
-//       console.log(store.state)
-//     }
-//   }
-//   next()
-// })
 console.log(" 呼叫中心正在启动  main.js dpr ==" + window.devicePixelRatio)
 
 Vue.config.productionTip = false

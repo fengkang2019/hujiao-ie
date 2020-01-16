@@ -177,14 +177,14 @@
 
     <el-row class="chartsRow" v-if="value==2">
       <el-col :span="24">
-        <Bar chartId="Bar2" height="100%" width="100%" text="开闸次数统计" />
+        <my-bar chartId="Bar2" height="100%" width="100%" text="开闸次数统计" />
       </el-col>
     </el-row>
     <el-row class="chartsRow" v-if="value==2" type="flex" justify="space-between">
-      <el-col style="width:49.5%">
+      <el-col style="width:49.7%">
         <!-- <Pie chartId="Pie5" height="100%" width="100%" text="异常开闸时段分析" /> -->
       </el-col>
-      <el-col style="width:49.5%">
+      <el-col style="width:49.7%">
         <!-- <Pie chartId="Pie6" height="100%" width="100%" text="异常开闸车牌类型分析" /> -->
       </el-col>
     </el-row>
@@ -193,8 +193,8 @@
 </template>
 
 <script>
-import Pie from "@/components/echarts/Pie.vue";
-import Bar from "@/components/echarts/Bar.vue";
+// import Pie from "@/components/echarts/Pie.vue";
+// import Bar from "@/components/echarts/Bar.vue";
 import { chooseDate } from "@/utils";
 import LookImage from "./LookImage";
 import { mapState } from "vuex";
@@ -203,7 +203,7 @@ import { queryRegionCode } from "@/request/parkRecord/queryRegionCode";
 import { getCutoffReason } from "@/request/parkRecord/CutoffReason";
 
 export default {
-  components: { Pie, Bar, LookImage },
+  components: { LookImage },
   data() {
     return {
       value: "1",

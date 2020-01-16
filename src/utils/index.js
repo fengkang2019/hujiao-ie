@@ -34,7 +34,7 @@ export function chooseDate(date, value) {
     }
     return value
 };
-//将秒转化为 天 时 分
+
 
 //保存 vuex数据页面刷新时不销毁
 export function saveUserLogin(that) {

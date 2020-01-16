@@ -30,7 +30,6 @@
                 size="small"
                 value-format="yyyyMMddHHmmss"
                 :default-time="rangeTime"
-                @change="changeTime(form.timerange)"
                 :picker-options="pickerOptions"
               ></el-date-picker>
             </el-form-item>
@@ -140,8 +139,8 @@
       </el-row>
     </el-form>
     <el-row v-if="value==2" class="downRow" type="flex" justify="space-between">
-      <el-col style="width:49.5%">
-        <Pie
+      <el-col style="width:49.7%">
+        <my-pie
           v-if="echartsFlag"
           chartId="Pie1"
           height="100%"
@@ -152,8 +151,8 @@
           txt="未接听次数"
         />
       </el-col>
-      <el-col style="width:49.5%">
-        <Pie
+      <el-col style="width:49.7%">
+        <my-pie
           v-if="echartsFlag"
           chartId="Pie2"
           height="100%"
@@ -166,8 +165,8 @@
       </el-col>
     </el-row>
     <el-row v-if="value==2" class="downRow" type="flex" justify="space-between">
-      <el-col style="width:49.5%">
-        <Pie
+      <el-col style="width:49.7%">
+        <my-pie
           v-if="echartsFlag"
           chartId="Pie3"
           height="100%"
@@ -178,8 +177,8 @@
           txt="30s~60s"
         />
       </el-col>
-      <el-col style="width:49.5%">
-        <Pie
+      <el-col style="width:49.7%">
+        <my-pie
           v-if="echartsFlag"
           chartId="Pie4"
           height="100%"
@@ -193,7 +192,7 @@
     </el-row>
     <el-row v-if="value==2" class="downRow">
       <el-col :span="24">
-        <Bar chartId="Bar" height="100%" width="100%" text="开闸次数统计" />
+        <my-bar chartId="Bar" height="100%" width="100%" text="开闸次数统计" />
       </el-col>
     </el-row>
     <el-row class="downRow2" v-if="value==1">
@@ -255,15 +254,11 @@
 <script>
 import { mapState, mapActions, mapMutations, mapGetters } from "vuex";
 import store from "../../store";
-import Pie from "@/components/echarts/Pie.vue";
-import Bar from "@/components/echarts/Bar.vue";
 import { chooseDate } from "@/utils";
-import { baseJavaUrl, kesbJavaURL, service } from "@/utils/api";
 import { commodRequest } from "@/request/commodRequest";
 import { queryRegionCode } from "@/request/parkRecord/queryRegionCode";
 import { saveUserLogin } from "@/utils";
 export default {
-  components: { Pie, Bar },
   data() {
     return {
       value: "1",
@@ -292,7 +287,6 @@ export default {
         { value: 0, name: "未接听" },
         { value: 0, name: "已接听" }
       ],
-
       pieDatas2: [
         { value: 0, name: "按键呼叫" },
         { value: 0, name: "自动呼叫" }
@@ -318,10 +312,10 @@ export default {
     };
   },
   methods: {
-    changeDate: function(date) {
+    changeDate(date) {
       this.form.timerange = chooseDate(date, this.form.timerange);
     },
-    onSubmit: function(form) {
+    onSubmit(form) {
       if (this.value == 1) {
         this.form.startTime = form.timerange[0];
         this.form.endTime = form.timerange[1];
@@ -331,7 +325,6 @@ export default {
         this.searchEchartsData();
       }
     },
-    changeTime(value) {},
     //选择停车场
     chooseParkCode(val) {
       this.form.regionCode = "";
@@ -340,8 +333,8 @@ export default {
       };
       queryRegionCode(
         reqData,
-        this.$store.state.userLogin.cust_id,
-        this.$store.state.userLogin.session
+        this.userLogin.cust_id,
+        this.userLogin.session
       ).then(res => {
         if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
           this.regionCodeList = [];
@@ -450,8 +443,8 @@ export default {
       const reqData = {
         current: this.form.current,
         size: this.form.size,
-        startTime: this.form.startTime,
-        endTime: this.form.endTime,
+        start: this.form.startTime,
+        end: this.form.endTime,
         parkCode: this.form.parkCode,
         regionCode: this.form.regionCode,
         status: this.form.status,
@@ -521,15 +514,16 @@ export default {
         this.pieDatas2[0].value = val.auto;
         this.pieDatas2[1].value = val.button;
         this.pieDatas1[1].value = val.missed;
+
         this.pieDatas4[4].value = val.processFourMin;
-        this.pieDatas4[0].value = val.processMore;
+        this.pieDatas4[1].value = val.processMore;
         this.pieDatas4[2].value = val.processSixty;
-        this.pieDatas4[1].value = val.processThirty;
+        this.pieDatas4[0].value = val.processThirty;
         this.pieDatas4[3].value = val.processTwoMin;
         this.pieDatas3[4].value = val.waitFourMin;
-        this.pieDatas3[0].value = val.waitMore;
+        this.pieDatas3[1].value = val.waitMore;
         this.pieDatas3[2].value = val.waitSixty;
-        this.pieDatas3[1].value = val.waitThirty;
+        this.pieDatas3[0].value = val.waitThirty;
         this.pieDatas3[3].value = val.waitTwoMin;
       },
       deep: true
@@ -598,7 +592,5 @@ export default {
 .export {
   text-align: right;
 }
-.btn {
-  background: #3e549d;
-}
+
 </style>
