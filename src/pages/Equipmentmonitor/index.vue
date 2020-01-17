@@ -102,10 +102,11 @@ export default {
     ...mapState(["userLogin", "parkCodeList"])
   },
   mounted() {
+    this.search(this.form);
     saveUserLogin(this);
   },
   methods: {
-    search: function(form) {
+    search(form) {
       this.loading = true;
       this.$axios
         .post("/pagerSelect/getDeviceState", {

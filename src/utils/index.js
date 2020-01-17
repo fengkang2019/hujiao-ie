@@ -15,12 +15,12 @@ export function chooseDate(date, value) {
             (startTime = moment()
                 .subtract(1, "day")
                 .format("YYYYMMDD" + "000000")),
-            endTime
+            (endTime = moment().subtract(1, "days").format("YYYYMMDD" + "235959"))
         ];
     } else if (date == 3) {
         value = [
             (startTime = moment()
-                .subtract(7, "day")
+                .subtract(6, "day")
                 .format("YYYYMMDD" + "000000")),
             endTime
         ];
@@ -55,17 +55,30 @@ export function saveUserLogin(that) {
     });
 }
 
-//封装导出功能函数
-export function export2Excel(columns, list) {
-    require.ensure([], () => {
-        const { export_json_to_excel } = require('@/assets/js/Export2Excel');
-        let tHeader = []
-        let filterVal = []
-        columns.forEach(item => {
-            tHeader.push(item.title)
-            filterVal.push(item.key)
-        })
-        const data = list.map(v => filterVal.map(j => v[j]))
-        export_json_to_excel(tHeader, data, '数据列表');
-    })
+//获取cookie 
+export function getCookie(key) {
+    let cookie = document.cookie;
+    if (cookie) {
+        let cookieList = cookie.split("; ");
+        for (var i = 0; i < cookieList.length; i++) {
+            var item = cookieList[i]; //"key=value"
+            var itemList = item.split("="); //["key","value"]
+            var itemKey = decodeURIComponent(itemList[0]);
+            var itemValue = decodeURIComponent(itemList[1]);
+            if (itemKey == key) {
+                return itemValue;
+            }
+        }
+        return "";
+    } else {
+        return "";
+    }
+}
+//增(key不存在)删(days为负数)改(key存在)
+export function setCookie(key, value, days) {
+    let date = new Date();
+    date.setDate(date.getDate() + days);
+    date.setHours(date.getHours() - 8);
+    document.cookie = encodeURIComponent(key) + "=" + encodeURIComponent(value) + ";expires=" + date + ";path=/";
+
 }

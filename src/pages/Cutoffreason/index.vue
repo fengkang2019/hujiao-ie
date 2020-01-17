@@ -12,7 +12,7 @@
         </el-col>
         <el-col :span="4" v-if="value==1">
           <div class="grid-content bg-purple export">
-            <el-button size="small" class="btn" type="primary">导出</el-button>
+            <el-button size="small" class="btn" type="primary" @click="exportToExcel">导出</el-button>
           </div>
         </el-col>
       </el-row>
@@ -280,42 +280,42 @@ export default {
         }
       });
     },
-    //点击导出
-    // exportToExcel: function() {
-    //   require.ensure([], () => {
-    //     const {
-    //       export_json_to_excel
-    //     } = require("../../assets/js/Export2Excel");
-    //     const tHeader = [
-    //       "序号",
-    //       "停车场",
-    //       "区域",
-    //       "呼叫器编号",
-    //       "车牌号",
-    //       "呼入时间",
-    //       "开闸人",
-    //       "异常开闸原因",
-    //       "备注"
-    //     ];
-    //     const filterVal = [
-    //       "series",
-    //       "parkCode",
-    //       "regionCode",
-    //       "devNo",
-    //       "carNum",
-    //       "callTime",
-    //       "oprator",
-    //       "abnormal",
-    //       "remark"
-    //     ];
-    //     const list = this.tableData;
-    //     const data = this.formatJson(filterVal, list);
-    //     export_json_to_excel(tHeader, data, "开闸原因excel");
-    //   });
-    // },
-    // formatJson(filterVal, jsonData) {
-    //   return jsonData.map(v => filterVal.map(j => v[j]));
-    // },
+    // 点击导出
+    exportToExcel: function() {
+      require.ensure([], () => {
+        const {
+          export_json_to_excel
+        } = require("../../assets/js/Export2Excel");
+        const tHeader = [
+          "序号",
+          "停车场",
+          "区域",
+          "呼叫器编号",
+          "车牌号",
+          "呼入时间",
+          "开闸人",
+          "异常开闸原因",
+          "备注"
+        ];
+        const filterVal = [
+          "series",
+          "parkCode",
+          "regionCode",
+          "devNo",
+          "carNum",
+          "callTime",
+          "oprator",
+          "abnormal",
+          "remark"
+        ];
+        const list = this.tableData;
+        const data = this.formatJson(filterVal, list);
+        export_json_to_excel(tHeader, data, "开闸原因excel");
+      });
+    },
+    formatJson(filterVal, jsonData) {
+      return jsonData.map(v => filterVal.map(j => v[j]));
+    },
     //查看图片
     lookPic(val) {
       this.imageVisible = true;

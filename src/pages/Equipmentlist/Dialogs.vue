@@ -258,18 +258,16 @@ export default {
         park_code: this.currentData.parkCode,
         region_code: val
       };
-      queryGate(
-        reqData,
-        this.userLogin.cust_id,
-        this.userLogin.session
-      ).then(res => {
-        if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
-          this.GateCodeList = [];
-          let GateCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
-          this.GateCodeList = GateCodeList;
-        } else {
+      queryGate(reqData, this.userLogin.cust_id, this.userLogin.session).then(
+        res => {
+          if (res.data.ANSWERS[0].ANS_MSG_HDR.MSG_CODE == 0) {
+            this.GateCodeList = [];
+            let GateCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
+            this.GateCodeList = GateCodeList;
+          } else {
+          }
         }
-      });
+      );
     }
   },
   computed: {

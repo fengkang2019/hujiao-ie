@@ -47,7 +47,7 @@ import {
 import md5 from "js-md5";
 import { mapMutations, mapState } from "vuex";
 import { baseJavaUrlG } from "@/utils/api";
-import { saveUserLogin } from "@/utils";
+import { saveUserLogin, setCookie, getCookie } from "@/utils";
 export default {
   data() {
     return {
@@ -71,15 +71,6 @@ export default {
       const that = this;
       this.$refs.logForm.validate(valid => {
         if (valid) {
-          if (this.checked) {
-            sessionStorage.setItem(
-              "account",
-              JSON.stringify({
-                user: login.usr_code,
-                trade_pwd: login.trade_pwd
-              })
-            );
-          }
           const reqData = {
             login_from_type: "51",
             usr_code: login.usr_code,
@@ -107,6 +98,37 @@ export default {
                 );
               this.userLogin = res[0];
               this.$store.commit("saveUserLogin", this.userLogin);
+              //记住密码
+              if (this.checked) {
+                if (!getCookie("account")) {
+                  // localStorage.setItem(
+                  //   "account",
+                  //   JSON.stringify({
+                  //     user: login.usr_code,
+                  //     trade_pwd: login.trade_pwd
+                  //   })
+                  // );
+                  setCookie(
+                    "account",
+                    JSON.stringify({
+                      user: login.usr_code,
+                      trade_pwd: login.trade_pwd
+                    }),
+                    15
+                  );
+                }
+              } else {
+                // localStorage.removeItem("account");
+                setCookie(
+                  "account",
+                  JSON.stringify({
+                    user: login.usr_code,
+                    trade_pwd: login.trade_pwd
+                  }),
+                  -7
+                );
+              }
+
               if (this.$store.state.route) {
                 this.$router.push({ name: this.$store.state.route });
               } else {
@@ -157,11 +179,15 @@ export default {
     }
   },
   mounted() {
-    if (sessionStorage.getItem("account")) {
-      this.login.usr_code = JSON.parse(sessionStorage.getItem("account")).user;
-      this.login.trade_pwd = JSON.parse(
-        sessionStorage.getItem("account")
-      ).trade_pwd;
+    // if (localStorage.getItem("account")) {
+    // this.login.usr_code = JSON.parse(localStorage.getItem("account")).user;
+    // this.login.trade_pwd = JSON.parse(
+    //   localStorage.getItem("account")
+    // ).trade_pwd;
+    // }
+    if (getCookie("account")) {
+      this.login.usr_code = JSON.parse(getCookie("account")).user;
+      this.login.trade_pwd = JSON.parse(getCookie("account")).trade_pwd;
     }
   },
   computed: {

@@ -6,7 +6,7 @@
           <el-row class="callrecord">
             <el-col id="calling">
               <div class="title">呼叫记录</div>
-              <el-tabs v-model="activeName" @tab-click="handleClick">
+              <el-tabs v-model="activeName">
                 <el-tab-pane label="接听中" name="first">
                   <div
                     class="visible"
@@ -124,14 +124,23 @@
                 <span>离线:</span>
                 <span>{{offlineCount}}</span>
               </div>
+              <el-input
+                placeholder="请输入关键字"
+                v-model="keyWord"
+                clearable
+                size="small"
+                style="width:60%;margin-left:12%"
+              ></el-input>
               <el-tree
                 :data="deviceList"
                 :props="defaultProps"
                 @node-click="handleNodeClick"
+                :filter-node-method="filterNode"
                 :default-expand-all="true"
                 :highlight-current="true"
                 class="nodeTree"
                 icon-class="el-icon-folder-opened"
+                ref="tree"
               >
                 <span class="my-custom" slot-scope="{ node , data }">
                   <i
@@ -375,12 +384,21 @@ export default {
       loading1: false,
       loading2: false,
       //当前主动呼叫时的设备id
-      currentDeviceId: ""
+      currentDeviceId: "",
+      keyWord: ""
     };
   },
+  watch: {
+    keyWord: function(newVal) {
+      this.$refs.tree.filter(newVal);
+    }
+  },
   methods: {
-    //切换接听状态
-    handleClick() {},
+    // 过滤节点
+    filterNode(value, data) {
+      if (!value) return true;
+      return data.label.indexOf(value) !== -1;
+    },
     //车位详情表格
     findDetail() {
       this.detailFlag = true;
@@ -1196,7 +1214,6 @@ export default {
     }
     next();
   }
- 
 };
 </script>
 
@@ -1532,9 +1549,7 @@ $fff: #fff;
                 .reset {
                   border: 0;
                   background: #fff;
-                  // position: absolute;
-                  // right: -120px;
-                  // top: -15px;
+
                   span {
                     display: block;
                     width: 30px;

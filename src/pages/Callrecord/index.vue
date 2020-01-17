@@ -17,9 +17,9 @@
         </el-col>
       </el-row>
       <el-row>
-        <el-col :span="6" v-if="value==1">
+        <el-col :span="6">
           <div class="grid-content bg-purple">
-            <el-form-item label="时间" label-width="90px">
+            <el-form-item label="时间">
               <el-date-picker
                 style="width:220px"
                 v-model="form.timerange"
@@ -35,7 +35,7 @@
             </el-form-item>
           </div>
         </el-col>
-        <el-col :span="6" v-if="value==1">
+        <el-col :span="6">
           <div class="grid-content bg-purple">
             <el-radio-group
               style="width:270px"
@@ -317,8 +317,8 @@ export default {
     },
     onSubmit(form) {
       if (this.value == 1) {
-        this.form.startTime = form.timerange[0];
-        this.form.endTime = form.timerange[1];
+        this.form.startTime = form.timerange ? form.timerange[0] : "";
+        this.form.endTime = form.timerange ? form.timerange[1] : "";
         this.form.current = 1;
         this.searchRecord();
       } else if (this.value == 2) {
@@ -340,12 +340,8 @@ export default {
           this.regionCodeList = [];
           let regionCodeList = res.data.ANSWERS[0].ANS_COMM_DATA;
           this.regionCodeList = regionCodeList;
-        } else {
         }
       });
-    },
-    handleClick(row) {
-      console.log(row);
     },
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
@@ -394,7 +390,7 @@ export default {
         let list = [];
         this.$axios
           .post("/pagerSelect/searchRecord", {
-            size: 9999,
+            size: 1000,
             current: 1
           })
           .then(res => {
@@ -422,6 +418,7 @@ export default {
               break;
             case "status":
               v[j] = v[j] == 0 ? "未处理" : v[j] == 1 ? "处理中" : "已处理";
+              break;
             case "waitTime":
               v[j] = v[j] + "s";
               break;
@@ -469,6 +466,8 @@ export default {
       this.echartsFlag = false;
       this.$axios
         .post("/pagerSelect/countInfo", {
+          start: this.form.startTime,
+          end: this.form.endTime,
           parkCode: this.form.parkCode,
           regionCode: this.form.regionCode,
           userNo: this.form.userNo
@@ -514,7 +513,6 @@ export default {
         this.pieDatas2[0].value = val.auto;
         this.pieDatas2[1].value = val.button;
         this.pieDatas1[1].value = val.missed;
-
         this.pieDatas4[4].value = val.processFourMin;
         this.pieDatas4[1].value = val.processMore;
         this.pieDatas4[2].value = val.processSixty;
@@ -588,9 +586,14 @@ export default {
       text-align: center;
     }
   }
+  .btn {
+    color: #fff;
+    background-color: #3d539c;
+    border-color: #3d539c;
+    border: none;
+  }
 }
 .export {
   text-align: right;
 }
-
 </style>

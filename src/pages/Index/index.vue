@@ -150,7 +150,7 @@ export default {
       if (val == "loginOut") {
         this.$store.commit("saveRoute", this.$route.name);
         this.$router.push({ name: "login" });
-        localStorage.clear();
+        // localStorage.clear();
       }
     }
   },
