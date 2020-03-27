@@ -327,7 +327,7 @@ export default {
       activeName: "first",
       form: {
         carNum: "",
-        carNumColor: "1",
+        carNumColor: "",
         remark: "",
         cutoffReason: ""
       },
@@ -336,8 +336,6 @@ export default {
       },
       records0: [],
       records2: [],
-      cutoffReason: "",
-      remark: "",
       detailFlag: false,
       state1: false,
       state4: true,
@@ -364,7 +362,7 @@ export default {
       },
       deviceList: [
         {
-          label: "武汉无人值守项目",
+          label: "无人值守项目",
           icon: "iconfont icon-folder",
           children: []
         }
@@ -456,7 +454,7 @@ export default {
             this.form.carNumColor = "1";
             this.state1 = true;
             this.state4 = false;
-            this.parkState = true;
+            // this.parkState = true;
             this.answering = true;
             //改变接听的userNo
             this.changeUserNo(item.id);
@@ -484,9 +482,7 @@ export default {
       };
       this.$axios.post("/pagerUpdate/updateRecord", reqData).then(res => {
         if (res.data.ans == 1) {
-          // this.$message.success("已成功插入一条记录");
         } else {
-          // this.$message.error("更新失败");
         }
       });
     },
@@ -641,6 +637,10 @@ export default {
         .then(res => {
           if (JSON.stringify(res) != "{}") {
             this.parkInfo = res.data;
+            this.showCarId = res.data.carId;
+            this.form.carNumColor = res.data.carType
+              ? res.data.carType + ""
+              : "";
             this.searchCarInfo();
             this.searchInCarInfos(this.parkInfo.carId, this.parkInfo.carType);
           } else {
@@ -681,8 +681,9 @@ export default {
           console.log(this.carInfo2);
           if (that.carInfo2.length > 0) {
             console.log(that.carInfo2[0]);
-            this.showCarId = that.carInfo2[0].car_id;
-            this.form.carNumColor = that.carInfo2[0].cartype;
+            // this.showCarId = that.carInfo2[0].car_id;
+            // this.form.carNumColor = that.carInfo2[0].cartype;
+            this.parkState = true;
             const reqData = {
               car_id: that.carInfo2[0].car_id,
               cartype: that.carInfo2[0].cartype,
@@ -711,7 +712,8 @@ export default {
             });
             // this.searchCarCharge(carType);
           } else {
-            this.$message.error("此设备暂无入场车辆信息");
+            // this.$message.error("此设备暂无入场车辆信息");
+            this.parkState = false;
             this.loading1 = false;
             return false;
           }
@@ -797,6 +799,7 @@ export default {
       this.carInfo2 = [];
       this.charge = [];
       this.form.carNum = "";
+      this.form.carNumColor = "";
       this.showCarId = "";
       this.loading1 = false;
       this.loading2 = false;
@@ -843,6 +846,47 @@ export default {
     cutOff() {
       let cutoffResult = VSPOcxClient.OpenDO(this.devId, 1);
       console.log("开闸结果", cutoffResult);
+      if (cutoffResult) {
+        this.addReason();
+      }
+    },
+    //添加开闸信息到通道
+    addReason() {
+      if (this.answering) {
+        const reqData = {
+          parkCode: this.recordsInfo.parkCode,
+          carId: this.parkInfo.carId,
+          carType: this.form.carNumColor,
+          type: 1
+        };
+      } else if (!this.answering) {
+        const reqData = {
+          parkCode: this.deviceInfo.parkCode,
+          carId: this.parkInfo.carId,
+          carType: this.form.carNumColor,
+          type: 1
+        };
+      }
+
+      this.$axios.post("/sending/carSpringInfoSending", reqData).then(res => {
+        console.log("添加开闸信息到通道", res);
+      });
+    },
+    //插入开闸原因信息到开闸原因统计表
+    addReasonInfo() {
+      const reqData = {
+        parkCode: "",
+        regionCode: "",
+        devNo: "",
+        carId: "",
+        callTime: "",
+        operator: "",
+        outoperate: "",
+        remark: ""
+      };
+      this.$axios.post("/pagerInsert/insertHandleRecord", reqData).then(res => {
+        console.log("插入开闸原因统计结果");
+      });
     },
     //关闸
     closeGate() {
@@ -859,7 +903,7 @@ export default {
         this.clearInfo();
         this.deviceInfo = device;
         this.answering = false;
-        this.parkState = true;
+        // this.parkState = true;
         console.log(device.devId);
         this.devId = device.devId;
         this.monitorId = device.monitorId;
@@ -1061,6 +1105,7 @@ export default {
           break;
         case 20:
           return "优惠券";
+          break;
         default:
           return "其他";
       }
@@ -1638,6 +1683,16 @@ $fff: #fff;
                       }
                       span.el-input__suffix-inner {
                         background: green;
+                      }
+                    }
+                  }
+                  .el-select.gray {
+                    .el-input {
+                      input {
+                        background: #cdcdcd;
+                      }
+                      span.el-input__suffix-inner {
+                        background: #cdcdcd;
                       }
                     }
                   }

@@ -1,3 +1,4 @@
+//注册全局组件
 import Vue from "vue";
 import Pie from "@/components/echarts/Pie.vue";
 import Bar from "@/components/echarts/Bar.vue";

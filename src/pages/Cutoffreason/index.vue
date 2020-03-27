@@ -95,7 +95,7 @@
         <el-col :span="7" v-if="value==1">
           <div class="grid-content bg-purple">
             <el-form-item label="车牌号">
-              <el-input placeholder="请选择车牌号" style="width:200px" v-model="form.carNum" size="small"></el-input>
+              <el-input placeholder="请选择车牌号" style="width:200px" v-model="form.carId" size="small"></el-input>
             </el-form-item>
           </div>
         </el-col>
@@ -105,7 +105,7 @@
               <el-select
                 placeholder="请选择异常开闸原因"
                 style="width:200px"
-                v-model="form.abnormalReason"
+                v-model="form.outoperate"
                 clearable
                 size="small"
               >
@@ -123,7 +123,7 @@
         <el-col :span="7" v-if="value==1">
           <div class="grid-content bg-purple">
             <el-form-item label="开闸人">
-              <el-select v-model="form.oprator" clearable placeholder="请选择客服人员" size="small">
+              <el-select v-model="form.operator" clearable placeholder="请选择客服人员" size="small">
                 <el-option value label="全部"></el-option>
               </el-select>
             </el-form-item>
@@ -131,26 +131,24 @@
         </el-col>
         <el-col :span="2">
           <div class="grid-content bg-purple">
-            <el-button type="primary" class="btn" @click="onSubmit(form)" size="small">查询</el-button>
+            <el-button type="primary" class="btn" @click="searchReason(form)" size="small">查询</el-button>
           </div>
         </el-col>
       </el-row>
     </el-form>
     <el-row class="tableRow" v-if="value==1">
-      <el-table
-        :data="tableData.slice((currentPage-1)*pagesize,currentPage*pagesize)"
-        border
-        style="width: 100%"
-        :fit="true"
-        v-loading="loading"
-      >
-        <el-table-column fixed prop="series" label="序号"></el-table-column>
+      <el-table :data="tableData" border style="width: 100%" :fit="true" v-loading="loading">
+        <el-table-column fixed prop="index" label="序号" width="60px">
+          <template slot-scope="scope">
+            <span>{{(form.currentPage-1)*form.pagesize+scope.$index+1}}</span>
+          </template>
+        </el-table-column>
         <el-table-column fixed prop="parkCode" label="停车场"></el-table-column>
         <el-table-column fixed prop="regionCode" label="区域"></el-table-column>
         <el-table-column fixed prop="devNo" label="呼叫器编号"></el-table-column>
-        <el-table-column fixed prop="carNum" label="车牌号"></el-table-column>
+        <el-table-column fixed prop="carId" label="车牌号"></el-table-column>
         <el-table-column fixed prop="callTime" label="呼入时间"></el-table-column>
-        <el-table-column fixed prop="oprator" label="开闸人"></el-table-column>
+        <el-table-column fixed prop="operator" label="开闸人"></el-table-column>
         <el-table-column fixed prop="abnormal" label="异常开闸原因"></el-table-column>
         <el-table-column fixed prop="remark" label="备注"></el-table-column>
         <el-table-column fixed="right" label="操作">
@@ -164,11 +162,11 @@
         <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-          :current-page="currentPage"
-          :page-size="pagesize"
+          :current-page="form.currentPage"
+          :page-size="form.pagesize"
           :page-sizes="[10, 20, 50, 100]"
           layout="total, prev, pager, next, sizes, jumper"
-          :total="400"
+          :total="form.total"
           background
           :pager-count="5"
         ></el-pagination>
@@ -193,8 +191,6 @@
 </template>
 
 <script>
-// import Pie from "@/components/echarts/Pie.vue";
-// import Bar from "@/components/echarts/Bar.vue";
 import { chooseDate } from "@/utils";
 import LookImage from "./LookImage";
 import { mapState } from "vuex";
@@ -210,8 +206,14 @@ export default {
       form: {
         timerange: [],
         date: "1",
+        carId: "",
+        operator: "",
+        outoperate: "",
         startTime: "",
-        endTime: ""
+        endTime: "",
+        currentPage: 1,
+        pagesize: 10,
+        total: 400
       },
       rangeTime: ["00:00:00", "23:59:59"],
       pickerOptions: {
@@ -221,33 +223,47 @@ export default {
       },
       tableData: [
         {
-          series: "1",
+          index: "1",
           parkCode: "sss",
           regionCode: "上海",
           devNo: "12344",
-          carNum: "鄂A123456",
+          carId: "鄂A123456",
           callTime: "2019 - 10 - 1",
-          oprator: "一接听",
+          e: "一接听",
           abnormal: "30",
           remark: "xxxxx"
         }
       ],
-      currentPage: 1,
-      pagesize: 10,
       imageVisible: false,
       regionCodeList: [],
       abnormal: [],
-      loading:false,
+      loading: false
     };
   },
   methods: {
-    changeDate: function(date) {
+    changeDate(date) {
       this.form.timerange = chooseDate(date, this.form.timerange);
     },
-    onSubmit: function(form) {
-      this.form.startTime = form.timerange[0];
-      this.form.endTime = form.timerange[1];
+    searchReason(form) {
+      this.form.startTime = form.timerange[0] ? form.timerange[0] : "";
+      this.form.endTime = form.timerange[1] ? form.timerange[1] : "";
       console.log(form);
+      this.search();
+    },
+    //查找开闸原因统计
+    search() {
+      const reqData = {
+        parkCode: this.form.parkCode,
+        regionCode: this.form.regionCode,
+        carId: this.form.carId,
+        outoperate: this.form.outoperate,
+        operator: this.form.operator,
+        start: this.form.startTime,
+        end: this.form.endTime
+      };
+      this.$axios
+        .post("/pagerSelect/searchHandleRecord", reqData)
+        .then(res => {});
     },
     changeTime(value) {},
     handleClick(row) {
@@ -255,11 +271,13 @@ export default {
     },
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
-      this.pagesize = val;
+      this.form.pagesize = val;
+      this.search();
     },
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
-      this.currentPage = val;
+      this.form.currentPage = val;
+      this.search();
     },
     //选择停车场得到区域
     chooseParkCode(val) {
@@ -302,15 +320,20 @@ export default {
           "parkCode",
           "regionCode",
           "devNo",
-          "carNum",
+          "carId",
           "callTime",
-          "oprator",
-          "abnormal",
+          "operator",
+          "outoperate",
           "remark"
         ];
         const list = this.tableData;
+        let exportLoad = this.$loading({
+          text: "正在导出开闸原因数据...",
+          background: "rgba(0,0,0,0.3)"
+        });
         const data = this.formatJson(filterVal, list);
         export_json_to_excel(tHeader, data, "开闸原因excel");
+        exportLoad.close();
       });
     },
     formatJson(filterVal, jsonData) {
@@ -392,8 +415,5 @@ export default {
       }
     }
   }
-}
-.btn {
-  background: #3e549d;
 }
 </style>

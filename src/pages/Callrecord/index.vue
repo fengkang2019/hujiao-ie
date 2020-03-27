@@ -388,6 +388,10 @@ export default {
           "remark"
         ];
         let list = [];
+        let exportLoad = this.$loading({
+          text: "正在导出呼叫记录数据...",
+          background:"rgba(0,0,0,0.3)"
+        });
         this.$axios
           .post("/pagerSelect/searchRecord", {
             size: 1000,
@@ -397,6 +401,7 @@ export default {
             list = res.data.records;
             const data = this.formatJson(filterVal, list);
             export_json_to_excel(tHeader, data, "呼叫记录excel");
+            exportLoad.close();
           });
       });
     },

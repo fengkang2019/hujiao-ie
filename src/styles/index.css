@@ -14,6 +14,12 @@ html,body,#app {
     border-color: #3d539c;
     border:none;
 }
+.btn:visited{
+    background:#3d539c ;
+}
+.btn:hover{
+    background:#3d539c ;
+}
 .el-table td, .el-table th.is-leaf {
     text-align: center;
     color:#000

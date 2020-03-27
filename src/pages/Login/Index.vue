@@ -29,7 +29,7 @@
               <el-checkbox v-model="checked">记住用户名密码</el-checkbox>
             </el-form-item>
             <el-form-item>
-              <el-button :round="round" type="primary" @click="onSubmit(login)">登陆</el-button>
+              <el-button :round="round" class="btn" type="primary" @click="onSubmit(login)">登陆</el-button>
             </el-form-item>
           </el-form>
         </div>
@@ -92,7 +92,6 @@ export default {
                     let parkCodeList = acct.filter(item => {
                       return item.type == 4;
                     });
-
                     that.$store.commit("saveParkCodeList", parkCodeList);
                   })
                 );
@@ -100,43 +99,45 @@ export default {
               this.$store.commit("saveUserLogin", this.userLogin);
               //记住密码
               if (this.checked) {
-                if (!getCookie("account")) {
-                  // localStorage.setItem(
-                  //   "account",
-                  //   JSON.stringify({
-                  //     user: login.usr_code,
-                  //     trade_pwd: login.trade_pwd
-                  //   })
-                  // );
-                  setCookie(
+                if (!localStorage.getItem("account")) {
+                  localStorage.setItem(
                     "account",
                     JSON.stringify({
                       user: login.usr_code,
                       trade_pwd: login.trade_pwd
-                    }),
-                    15
+                    })
                   );
+                  // setCookie(
+                  //   "account",
+                  //   JSON.stringify({
+                  //     user: login.usr_code,
+                  //     trade_pwd: login.trade_pwd
+                  //   }),
+                  //   15
+                  // );
                 }
               } else {
-                // localStorage.removeItem("account");
-                setCookie(
-                  "account",
-                  JSON.stringify({
-                    user: login.usr_code,
-                    trade_pwd: login.trade_pwd
-                  }),
-                  -7
-                );
+                localStorage.removeItem("account");
+                //删除cookie信息
+                // setCookie(
+                //   "account",
+                //   JSON.stringify({
+                //     user: login.usr_code,
+                //     trade_pwd: login.trade_pwd
+                //   }),
+                //   -7
+                // );
               }
 
               if (this.$store.state.route) {
-                this.$router.push({ name: this.$store.state.route });
+                this.$router.push({ name: this.route });
               } else {
                 this.$router.push({ name: "longcutoff" });
               }
             }
           });
         } else {
+          this.$message.error("用户名或密码不能为空!");
           return false;
         }
       });
@@ -179,19 +180,30 @@ export default {
     }
   },
   mounted() {
-    // if (localStorage.getItem("account")) {
-    // this.login.usr_code = JSON.parse(localStorage.getItem("account")).user;
-    // this.login.trade_pwd = JSON.parse(
-    //   localStorage.getItem("account")
-    // ).trade_pwd;
+    // console.log("cookie信息", JSON.parse(getCookie("account")).user);
+    // if (getCookie("account")) {
+    //   this.login.usr_code = JSON.parse(getCookie("account")).user;
+    //   this.login.trade_pwd = JSON.parse(getCookie("account")).trade_pwd;
     // }
-    if (getCookie("account")) {
-      this.login.usr_code = JSON.parse(getCookie("account")).user;
-      this.login.trade_pwd = JSON.parse(getCookie("account")).trade_pwd;
-    }
   },
   computed: {
     ...mapState(["route"])
+  },
+  beforeRouteEnter(to, from, next) {
+    // 注意，在路由进入之前，组件实例还未渲染，所以无法获取this实例，只能通过vm来访问组件实例
+    next(vm => {
+      // console.log("cookie信息", JSON.parse(getCookie("account")).user);
+      // if (getCookie("account")) {
+      //   vm.login.usr_code = JSON.parse(getCookie("account")).user;
+      //   vm.login.trade_pwd = JSON.parse(getCookie("account")).trade_pwd;
+      // }
+      if (localStorage.getItem("account")) {
+        vm.login.usr_code = JSON.parse(localStorage.getItem("account")).user;
+        vm.login.trade_pwd = JSON.parse(
+          localStorage.getItem("account")
+        ).trade_pwd;
+      }
+    });
   }
 };
 </script>
@@ -233,6 +245,11 @@ export default {
         }
         .el-input {
           outline-color: #3d539e;
+          color: #3d539e;
+        }
+        .el-checkbox__inner {
+          background-color: #3d539e;
+          border: 1px solid #3d539e;
           color: #3d539e;
         }
       }

@@ -74,7 +74,7 @@ const router = new Router({
 
 
   ],
-  mode:"hash"
+  mode:"history"
 })
 
 export default router;

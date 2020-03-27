@@ -159,7 +159,6 @@ export default {
       this.user = this.$store.state.userLogin.ent_name;
     }
     saveUserLogin(this);
-
   },
   computed: {
     ...mapState(["userLogin"])
@@ -171,6 +170,18 @@ export default {
 .main {
   width: 100%;
   height: 100%;
+}
+.btn {
+  color: #fff;
+  background-color: #3d539c;
+  border-color: #3d539c;
+  border: none;
+}
+.btn:visited {
+  background: #3d539c;
+}
+.btn:hover {
+  background: #3d539c;
 }
 .el-header {
   color: #333;
