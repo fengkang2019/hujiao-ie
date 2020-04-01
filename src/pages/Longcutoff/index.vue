@@ -193,7 +193,7 @@
                     </el-autocomplete>
                   </el-form-item>
                   <el-form-item class="resetFormItem" prop="reset">
-                    <el-button class="reset" @click="resetForm(form)">刷新</el-button>
+                    <el-button class="reset" @click="resetForm()">刷新</el-button>
                   </el-form-item>
                 </div>
                 <div class="carType">
@@ -299,6 +299,7 @@
                 </el-form-item>
                 <el-button type="primary" class="cutOff" @click="cutOff">确认开闸</el-button>
                 <el-button type="primary" class="closeGate" @click="closeGate">确认关闸</el-button>
+                <el-link type="primary" href="http://frp-vip.tnar.cn:18402/" target="_blank" class="frp" :disabled="state4">前往FRP</el-link>
               </el-col>
             </el-row>
           </el-form>
@@ -356,6 +357,7 @@ export default {
       charge: [],
       abnormal: [],
       timer: "",
+      timer2: "",
       defaultProps: {
         children: "children",
         label: "label"
@@ -425,6 +427,7 @@ export default {
     //挂断
     hangup() {
       console.log("挂断电话");
+      clearInterval(this.timer2);
       this.clearInfo();
       this.stopRT();
       this.records2 = [];
@@ -486,11 +489,13 @@ export default {
         }
       });
     },
-    //点击刷新
-    resetForm(form) {
-      console.log(this.$refs.carform);
-      this.clearInfo();
-      this.$refs.carform.resetFields();
+    //点击刷新,重新获取对应停车信息
+    resetForm() {
+      if (this.answering) {
+        this.searchDevParkInfo(this.recordsInfo);
+      } else if (!this.answering) {
+        this.searchDevParkInfo(this.deviceInfo);
+      }
     },
     //查车牌
     searchCar(form) {
@@ -627,12 +632,12 @@ export default {
         });
     },
     //查询设备对应停车信息
-    searchDevParkInfo(item) {
+    searchDevParkInfo(device) {
       this.$axios
         .post("/pagerSelect/searchParkingDetail", {
-          parkCode: item.parkCode,
-          regionCode: item.regionCode,
-          devNo: item.devNo
+          parkCode: device.parkCode,
+          regionCode: device.regionCode,
+          devNo: device.devNo
         })
         .then(res => {
           if (JSON.stringify(res) != "{}") {
@@ -895,7 +900,9 @@ export default {
     },
     //主动打开 监控摄像头
     handleNodeClick(device) {
+      clearInterval(this.timer2);
       this.stopAllRT();
+      console.log(device, "主动打开摄像头信息");
       if (device.action == 1) {
         if (this.currentDeviceId) {
           this.changeStatus();
@@ -915,8 +922,14 @@ export default {
         }
         this.insertRecord(device);
         this.searchDevParkInfo(device);
+        this.timer2 = setInterval(() => {
+          this.searchDevParkInfo(device);
+        }, 10000);
+      } else {
+        return false;
       }
     },
+
     //主动插入呼叫记录
     insertRecord(device) {
       console.log("插入的名字", this.userLogin.ent_name);
@@ -1246,9 +1259,11 @@ export default {
   },
   beforeDestroy() {
     clearInterval(this.timer);
+    clearInterval(this.timer2);
   },
   beforeRouteLeave(to, from, next) {
     if (from.name == "longcutoff") {
+      clearInterval(this.timer2);
       this.stopAllRT();
       let loginOutResult = VSPOcxClient.LogoutServer();
       console.log(loginOutResult, "登出结果");
@@ -1822,12 +1837,21 @@ $fff: #fff;
               }
             }
             .el-button {
-              width: 0.45 * $mainWdth;
+              width: 0.35 * $mainWdth;
               background: #0fab00;
               border-radius: 20px;
               margin-top: 10px;
               border: 0;
               font-weight: 600;
+            }
+            .frp {
+              background: #0fab00;
+              color: #fff;
+              font-weight: 700;
+              height: 3.1rem;
+              border-radius: 16px;
+              padding: 0 1rem;
+              margin-bottom: 0.2rem;
             }
             .is-disabled {
               background: #ccc;

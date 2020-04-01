@@ -265,7 +265,7 @@ export default {
         .post("/pagerSelect/searchHandleRecord", reqData)
         .then(res => {});
     },
-    changeTime(value) {},
+    changeTime(value) {console.log(value)},
     handleClick(row) {
       console.log(row);
     },

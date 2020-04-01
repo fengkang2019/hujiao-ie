@@ -107,26 +107,10 @@ export default {
                       trade_pwd: login.trade_pwd
                     })
                   );
-                  // setCookie(
-                  //   "account",
-                  //   JSON.stringify({
-                  //     user: login.usr_code,
-                  //     trade_pwd: login.trade_pwd
-                  //   }),
-                  //   15
-                  // );
+                 
                 }
               } else {
                 localStorage.removeItem("account");
-                //删除cookie信息
-                // setCookie(
-                //   "account",
-                //   JSON.stringify({
-                //     user: login.usr_code,
-                //     trade_pwd: login.trade_pwd
-                //   }),
-                //   -7
-                // );
               }
 
               if (this.$store.state.route) {
@@ -180,11 +164,7 @@ export default {
     }
   },
   mounted() {
-    // console.log("cookie信息", JSON.parse(getCookie("account")).user);
-    // if (getCookie("account")) {
-    //   this.login.usr_code = JSON.parse(getCookie("account")).user;
-    //   this.login.trade_pwd = JSON.parse(getCookie("account")).trade_pwd;
-    // }
+  
   },
   computed: {
     ...mapState(["route"])
@@ -192,11 +172,6 @@ export default {
   beforeRouteEnter(to, from, next) {
     // 注意，在路由进入之前，组件实例还未渲染，所以无法获取this实例，只能通过vm来访问组件实例
     next(vm => {
-      // console.log("cookie信息", JSON.parse(getCookie("account")).user);
-      // if (getCookie("account")) {
-      //   vm.login.usr_code = JSON.parse(getCookie("account")).user;
-      //   vm.login.trade_pwd = JSON.parse(getCookie("account")).trade_pwd;
-      // }
       if (localStorage.getItem("account")) {
         vm.login.usr_code = JSON.parse(localStorage.getItem("account")).user;
         vm.login.trade_pwd = JSON.parse(

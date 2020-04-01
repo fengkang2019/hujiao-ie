@@ -43,11 +43,11 @@ html,body,#app {
     text-align: center;
     line-height: 32px;
     font-size: 12px;
-  }
-  .cell{
+}
+.cell{
       text-align: center;
   }
- .el-table .el-table__header-wrapper thead tr th {
+.el-table .el-table__header-wrapper thead tr th {
         background-color: #dcdcdc;
-     }
+}
     

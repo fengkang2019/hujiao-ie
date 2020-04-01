@@ -22,7 +22,7 @@
             <el-form-item label="时间">
               <el-date-picker
                 style="width:220px"
-                v-model="form.timerange"
+                v-model="timerange"
                 type="daterange"
                 range-separator="至"
                 start-placeholder="开始日期"
@@ -262,8 +262,8 @@ export default {
   data() {
     return {
       value: "1",
+      timerange: ["",""],
       form: {
-        timerange: "",
         date: "1",
         parkCode: "",
         regionCode: "",
@@ -313,12 +313,12 @@ export default {
   },
   methods: {
     changeDate(date) {
-      this.form.timerange = chooseDate(date, this.form.timerange);
+      this.timerange = chooseDate(date, this.timerange);
     },
     onSubmit(form) {
+      this.form.startTime = this.timerange ? this.timerange[0] : "";
+      this.form.endTime = this.timerange ? this.timerange[1] : "";
       if (this.value == 1) {
-        this.form.startTime = form.timerange ? form.timerange[0] : "";
-        this.form.endTime = form.timerange ? form.timerange[1] : "";
         this.form.current = 1;
         this.searchRecord();
       } else if (this.value == 2) {
@@ -390,7 +390,7 @@ export default {
         let list = [];
         let exportLoad = this.$loading({
           text: "正在导出呼叫记录数据...",
-          background:"rgba(0,0,0,0.3)"
+          background: "rgba(0,0,0,0.3)"
         });
         this.$axios
           .post("/pagerSelect/searchRecord", {
@@ -533,6 +533,7 @@ export default {
     }
   },
   mounted() {
+    console.log(new Date());
     saveUserLogin(this);
     this.searchEchartsData();
   }

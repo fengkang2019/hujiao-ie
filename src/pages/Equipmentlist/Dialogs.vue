@@ -93,19 +93,17 @@
       <el-form-item label="设备ID" :label-width="formLabelWidth" prop="cameraId">
         <el-input
           size="small"
-          v-model="currentData.cameraId"
+          v-model.number="currentData.cameraId"
           autocomplete="off"
           placeholder="请输入设备ID"
-          maxlength="5"
         ></el-input>
       </el-form-item>
       <el-form-item label="监控ID" :label-width="formLabelWidth" prop="monitorId">
         <el-input
           size="small"
-          v-model="currentData.monitorId"
+          v-model.number="currentData.monitorId"
           autocomplete="off"
           placeholder="请输入监控ID"
-          maxlength="5"
         ></el-input>
       </el-form-item>
       <el-form-item label="版本号" :label-width="formLabelWidth" prop="devVer">
@@ -119,7 +117,7 @@
       <el-form-item label="启用日期" :label-width="formLabelWidth" prop="activeDate">
         <el-input
           size="small"
-          v-model="currentData.activeDate"
+          v-model.number="currentData.activeDate"
           autocomplete="off"
           placeholder="日期格式:20191010"
           maxlength="8"
@@ -128,7 +126,7 @@
       <el-form-item label="到期日期" :label-width="formLabelWidth" prop="endDate">
         <el-input
           size="small"
-          v-model="currentData.endDate"
+          v-model.number="currentData.endDate"
           placeholder="日期格式:20191010"
           autocomplete="off"
           maxlength="8"
@@ -154,7 +152,7 @@
     </el-form>
     <div v-show="flag!='3'" slot="footer" class="dialog-footer">
       <el-button size="small" class="btn" @click="cancel">取 消</el-button>
-      <el-button size="small" class="btn" type="primary" @click="dialogFormVisible(currentData)">确 定</el-button>
+      <el-button size="small" class="btn" type="primary" @click="confirm(currentData)">确 定</el-button>
     </div>
   </el-dialog>
 </template>
@@ -171,7 +169,7 @@ export default {
     return {
       formLabelWidth: "100px",
       form: {
-        parkCode: ""
+        parkCode: "",
       },
       rules: {
         parkCode: [
@@ -186,17 +184,20 @@ export default {
           { required: true, message: "请输入设备型号", trigger: "blur" }
         ],
         cameraId: [
-          { required: true, message: "请输入设备Id", trigger: "blur" }
+          { required: true, message: "请输入设备Id", trigger: "blur" },
+          {type:"number",message:"设备id必须为数字",trigger:"change"}
         ],
         devVer: [{ message: "请输入设备版本号", trigger: "blur" }],
         devCompany: [
           { required: true, message: "请输入厂商名称", trigger: "blur" }
         ],
         activeDate: [
-          { required: true, message: "请输入启用日期", trigger: "blur" }
+          { required: true, message: "请输入启用日期", trigger: "blur" },
+          {type:"number",message:"日期必须为数字",trigger:"change"},
         ],
         endDate: [
-          { required: true, message: "请输入到期日期", trigger: "blur" }
+          { required: true, message: "请输入到期日期", trigger: "blur" },
+          {type:"number",message:"日期必须为数字",trigger:"change"}
         ]
       },
       regionCodeList: [],
@@ -205,7 +206,7 @@ export default {
     };
   },
   methods: {
-    dialogFormVisible(currentData) {
+    confirm(currentData) {
       this.$refs.myForm.validate(valid => {
         if (valid) {
           if (this.flag == "1") {
@@ -222,7 +223,6 @@ export default {
           this.$message.error("请输入完整且正确的设备信息");
         }
       });
-
       this.$parent.visibleFlag = false;
     },
     handleClose() {
